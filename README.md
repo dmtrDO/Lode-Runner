@@ -1,1 +1,3 @@
 # Lode Runner
+
++++++++++++++   INSTRUCTION  +++++++++++++
