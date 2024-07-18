@@ -125,7 +125,9 @@
       <AssemblyDebug>false</AssemblyDebug>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)src\levels" "$(SolutionDir)bin\$(Platform)\$(Configuration)\src\levels"</Command>
+      <Command>rmdir /S /Q "$(SolutionDir)bin\$(Platform)\$(Configuration)\src\levels"
+mkdir "$(SolutionDir)bin\$(Platform)\$(Configuration)\src\levels"
+xcopy "$(SolutionDir)src\levels\*.txt" "$(SolutionDir)bin\$(Platform)\$(Configuration)\src\levels" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,7 +153,11 @@
       <AssemblyDebug>false</AssemblyDebug>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)src\levels" "$(SolutionDir)bin\$(Platform)\$(Configuration)\src\levels"</Command>
+      <Command>rmdir /S /Q "$(SolutionDir)bin\$(Platform)\$(Configuration)\src\levels"
+mkdir "$(SolutionDir)bin\$(Platform)\$(Configuration)\src\levels"
+xcopy "$(SolutionDir)src\levels\*.txt" "$(SolutionDir)bin\$(Platform)\$(Configuration)\src\levels" /Y
+xcopy /Y /S "$(SolutionDir)bin\$(Platform)\$(Configuration)" "$(SolutionDir)Lode Runner\LR"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
