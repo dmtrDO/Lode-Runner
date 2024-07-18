@@ -2,8 +2,7 @@
 
 +++++++++++++  DOWNLOAD INSTRUCTION  +++++++++++++ <br>
 Go to https://github.com/dmtrDO/Lode-Runner -> green button "code" -> download zip.
-After this you need to unzip folder. Inside the folder will be folder "Lode Runner", the rest can be deleted. Inside folder "Lode Runner" will be another folder "LR" and a shortcut to the game named "Lode Runner".
-Take and move this shortcut wherever you feel comfortable running the game. The rest can be dragged to a place you can remember and still keep it out of your way. If something went wrong, just redownload.
+After this you need to unzip folder. Inside the folder will be folder "Lode Runner", the rest can be deleted. Inside folder "Lode Runner" will be another folder "LR", README-file and a shortcut to the game named "Lode Runner". Take and move this shortcut wherever you feel comfortable running the game. The rest can be dragged to a place you can remember and still keep it out of your way. If something went wrong, just redownload.
 
 ++++++++++++++   GAME INSTRUCTION   +++++++++++++ <br>
 The game has a simple level builder, to do this go to the folder “LR” -> src -> levels. There will be many levels (level1.txt, level2.txt and etc...) and a text file rules.txt, read it if you want to change or add levels. The name must be level{num}.txt where {num} is the level number. Here is also save.txt, it stores the number of the level (the game has an autosave), which will be opened when you start the game, it can also be changed. If something went wrong, just redownload as written in the previous paragraph “DOWNLOAD INSTRUCTION”.
