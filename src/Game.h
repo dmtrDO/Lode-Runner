@@ -1,6 +1,3 @@
-#pragma once
-
-#pragma once
 
 #include "SFML/Graphics.hpp"
 #include <iostream>
@@ -12,7 +9,7 @@
 class Game
 {
 public:
-	Game(std::string path, int level, sf::Vector2i windowPosition);
+	Game(std::string path, int level, sf::Vector2i windowPosition, sf::Vector2u windowSize);
 
 	sf::RenderWindow window;
 
@@ -32,14 +29,9 @@ private:
 
 	std::string pathToLevel;
 
-	void setWindow(sf::Vector2i windowsPosition);
+	void setWindow(sf::Vector2i windowsPosition, sf::Vector2u windowSize);
 	///// 23 x 32 blocks
    ///// 1 block = 30 x 30 pixels
-
-	float windowK;
-
-	sf::VideoMode desktop;
-	sf::String name;
 
 	sf::Image windowIcon;
 	void setIcon();

@@ -1,7 +1,7 @@
 
 #include "Game.h"
 
-int main()
+int WinMain()
 {
     int placeForExpr = 20;
     unsigned int w = 32 * 30, h = 23 * 30;
@@ -17,6 +17,8 @@ int main()
 
     sf::Vector2i winpos = sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - width) / 2),
         static_cast<int>((sf::VideoMode::getDesktopMode().height - bestMode.height) / 2 - 2 * placeForExpr));
+
+    sf::Vector2u winsize = sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr);
 
     while (true)
     {
@@ -42,13 +44,12 @@ int main()
         {
             if (!open) break;
             std::string path = "src/levels/level" + std::to_string(i) + ".txt";
-            Game game(path, i, winpos);
+            Game game(path, i, winpos, winsize);
             while (game.window.isOpen())
             {
                 game.handle();
                 game.update();
                 game.draw();
-                winpos = game.getWinpos();
             }
             if (game.isIgnoreLevel())
             {
@@ -60,6 +61,8 @@ int main()
                 open = false;
                 break;
             }
+            winpos = game.getWinpos();
+            winsize = game.window.getSize();
         }
 
         if (size == lvl - '0') lvl = '1';

@@ -114,12 +114,12 @@ void Game::draw()
 //////////////////////          MAIN FUNCTIONS END         //////////////
 ///////////////////////////////////////////////////////////////////////////
 
-Game::Game(std::string path, int level, sf::Vector2i windowPosition)
+Game::Game(std::string path, int level, sf::Vector2i windowPosition, sf::Vector2u windowSize)
 {
 	pathToLevel = path;
 	loadTextures();
 	initVariables();
-	setWindow(windowPosition);
+	setWindow(windowPosition, windowSize);
 	setIcon();
 	setSprites();
 	setSprite1();
@@ -744,28 +744,12 @@ void Game::initVariables()
 	reawakenedTextures = { texture40, texture41, texture42, texture43, texture44, texture45, texture46, texture47, texture48, texture49, texture50, texture51, texture15 };
 }
 
-void Game::setWindow(sf::Vector2i windowPosition)
+void Game::setWindow(sf::Vector2i windowPosition, sf::Vector2u windowSize)
 {
-	name = "Lode Runner";
-	int placeForExpr = 20;
-	unsigned int w = 32 * 30, h = 23 * 30;
-	desktop = sf::VideoMode(w, h + placeForExpr);
-
-	sf::VideoMode bestMode;
-	for (sf::VideoMode mode : sf::VideoMode::getFullscreenModes())
-	{
-		if (mode.height >= sf::VideoMode::getDesktopMode().height - 2 * placeForExpr) continue;
-		bestMode = mode;
-		break;
-	}
-
-	double k = static_cast<double>(bestMode.height) / static_cast<double>(h);
-	double width = k * static_cast<double>(w);
-
 	for (int i = 0; i < 5; i++) window.create(sf::VideoMode(0, 0), "", sf::Style::None);
-	window.create(desktop, name, sf::Style::Close | sf::Style::Titlebar);
+	window.create(sf::VideoMode(32 * 30, 23 * 30 + 20), "Lode Runner");
 	window.setPosition(windowPosition);
-	window.setSize(sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr));
+	window.setSize(windowSize);
 }
 
 sf::Vector2i Game::getWinpos() const
