@@ -1,6 +1,6 @@
 # Lode Runner
 
-![](LR/srites/preview.png)
+![](LR/sprites/preview.png)
 
 ## DOWNLOAD INSTRUCTION
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Go to https://github.com/dmtrDO/Lode-Runner -> green button ***code*** -> ***download zip***.
