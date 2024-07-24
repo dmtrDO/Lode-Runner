@@ -138,8 +138,7 @@ private:
 
 	std::vector <sf::Sprite> forFly;
 
-	bool updateFly(sf::Time deltaTime);
-	bool isFromFly;
+	bool updateFly();
 
 	std::vector<sf::Texture> texturesForWorkout;
 

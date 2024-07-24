@@ -1,7 +1,7 @@
 
 #include "Game.h"
 
-int WinMain()
+int main()
 {
     int placeForExpr = 20;
     unsigned int w = 32 * 30, h = 23 * 30;
@@ -33,14 +33,15 @@ int WinMain()
             file.close();
         }
 
-        std::string savePath = "src/levels/save.txt";
+        std::string savePath = "src/levels/.save.txt";
         std::ifstream isave(savePath);
-        char lvl = isave.get();
+        std::string lvl;
+        isave >> lvl;
         isave.close();
 
-        int level = lvl - '0';
+        int level = std::stoi(lvl);
         bool open = true;
-        for (int i = level; i < size; i++, lvl++)
+        for (int i = level; i < size; i++)
         {
             if (!open) break;
             std::string path = "src/levels/level" + std::to_string(i) + ".txt";
@@ -54,7 +55,9 @@ int WinMain()
             if (game.isIgnoreLevel())
             {
                 i--;
-                lvl--;
+                int prevLevel = std::stoi(lvl);
+                prevLevel--;
+                lvl = std::to_string(prevLevel);
             }
             if (!game.getOpen())
             {
@@ -63,12 +66,16 @@ int WinMain()
             }
             winpos = game.getWinpos();
             winsize = game.window.getSize();
+
+            int nextLevel = std::stoi(lvl);
+            nextLevel++;
+            lvl = std::to_string(nextLevel);
         }
 
-        if (size == lvl - '0') lvl = '1';
+        if (size == std::stoi(lvl)) lvl = "1";
 
         std::ofstream osave(savePath, std::ios::out | std::ios::trunc);
-        osave.put(lvl);
+        osave << lvl;
         osave.close();
         if (!open) return 0;
     }
