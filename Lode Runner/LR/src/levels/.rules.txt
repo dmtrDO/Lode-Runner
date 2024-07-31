@@ -13,6 +13,7 @@ Simple level editor
 7 - enemy
 8 - main character
 9 - foundation
+i - invisible block
 
 Go through several levels (level1.txt, level2.txt...),
 this will help you understand the basic concept.

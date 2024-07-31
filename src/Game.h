@@ -139,6 +139,7 @@ private:
 	std::vector <sf::Sprite> forFly;
 
 	bool updateFly();
+	bool isFromFly;
 
 	std::vector<sf::Texture> texturesForWorkout;
 
@@ -190,6 +191,8 @@ private:
 	void restart();
 
 	sf::Vector2i winpos;
+
+	bool updateHelp(sf::Time& deltaTime);
 };
 
 

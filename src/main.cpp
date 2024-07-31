@@ -1,5 +1,5 @@
 
-#include "Game.h"
+#include "Game.h" 
 
 int main()
 {
@@ -19,6 +19,11 @@ int main()
         static_cast<int>((sf::VideoMode::getDesktopMode().height - bestMode.height) / 2 - 2 * placeForExpr));
 
     sf::Vector2u winsize = sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr);
+
+                                                                             /*  //  for creating and test levels
+    winpos = sf::Vector2i(1215, 330);                   /////////////////////////////////////////////////////////////
+    winsize = sf::Vector2u(500 * 32 / 23, 500);        /////////////////////////////////////////////////////////////
+                                                                             */   
 
     while (true)
     {
@@ -43,6 +48,9 @@ int main()
         bool open = true;
         for (int i = level; i < size; i++)
         {
+            std::ofstream osave(savePath, std::ios::out | std::ios::trunc);
+            osave << lvl;
+            osave.close();
             if (!open) break;
             std::string path = "src/levels/level" + std::to_string(i) + ".txt";
             Game game(path, i, winpos, winsize);
@@ -73,10 +81,10 @@ int main()
         }
 
         if (size == std::stoi(lvl)) lvl = "1";
-
         std::ofstream osave(savePath, std::ios::out | std::ios::trunc);
         osave << lvl;
         osave.close();
+
         if (!open) return 0;
     }
 
