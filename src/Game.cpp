@@ -65,7 +65,7 @@ void Game::handle()
 }
 
 void Game::update()
-{
+{	
 	animateDeleted();
 
 	updateDeath();
@@ -76,8 +76,6 @@ void Game::update()
 
 	sf::Time deltaTime = deltaTimeClock.restart();
 
-	if (updateHelp(deltaTime)) return;
-
 	if (updateFly())
 	{
 		sprite1.move(0, fabs(mainSpeed) * deltaTime.asSeconds());
@@ -85,6 +83,8 @@ void Game::update()
 		isFromFly = true;
 		return;
 	}
+
+	if (updateHelp(deltaTime)) return;
 
 	updateMoveLR(deltaTime);
 	updateMoveUD(deltaTime);
@@ -99,7 +99,10 @@ void Game::update()
 		}
 	}
 	
-	if (isFromFly) sprite1.setTexture(texture13);
+	int counter = 0;
+	for (sf::Sprite& sprite : spritesUD)
+		if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds())) counter++; 
+	if (isFromFly && counter == 0) sprite1.setTexture(texture13);
 	isFromFly = false;
 }
 
@@ -152,21 +155,95 @@ bool Game::updateHelp(sf::Time& deltaTime)
 
 	bool isHelp = false;
 
-	sf::RectangleShape rect(sf::Vector2f(30.0f, 2.0f));
-	rect.setPosition(sprite1.getGlobalBounds().left, sprite1.getGlobalBounds().top + 28);
+	sf::RectangleShape rectdown(sf::Vector2f(30.0f, help));
+	rectdown.setPosition(sprite1.getGlobalBounds().left, sprite1.getGlobalBounds().top + help);
+
+	sf::RectangleShape rectunder(sf::Vector2f(30.0f, help));
+	rectunder.setPosition(sprite1.getGlobalBounds().left, sprite1.getGlobalBounds().top + 30);
+
+	sf::RectangleShape rectop(sf::Vector2f(30.0f, help));
+	rectop.setPosition(sprite1.getGlobalBounds().left, sprite1.getGlobalBounds().top);
 
 	for (sf::Sprite& sprite : spritesUD)
 	{
-		if (rect.getGlobalBounds().intersects(sprite.getGlobalBounds()) && movingUp 
-			&& rect.getGlobalBounds().left >= sprite.getGlobalBounds().left - 14 && rect.getGlobalBounds().left <= sprite.getGlobalBounds().left + 14)
+		if (movingLeft && sprite1.getPosition().x <= 15 + help || movingRight && sprite1.getPosition().x >= 32 * 30 - 15 - help) return false;
+		for (sf::Sprite& block : blocks)
 		{
-			if (sprite1.getGlobalBounds().left != sprite.getGlobalBounds().left)
+			if (block.getGlobalBounds().contains(sprite1.getGlobalBounds().left - 0.01f, sprite1.getGlobalBounds().top + 15.0f) && movingLeft) return false;
+			if (block.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 30.01f, sprite1.getGlobalBounds().top + 15.0f) && movingRight) return false;
+		}
+
+		if (rectdown.getGlobalBounds().intersects(sprite.getGlobalBounds()) && movingUp 
+			&& rectdown.getGlobalBounds().left >= sprite.getGlobalBounds().left - help && rectdown.getGlobalBounds().left <= sprite.getGlobalBounds().left + help)
+		{
+			for (sf::Sprite& block : blocks)
 			{
-				
+				if (block.getGlobalBounds().contains(sprite.getGlobalBounds().left + 15.0f, sprite.getGlobalBounds().top - 15.0f)) return false;
 			}
+			if (rectdown.getGlobalBounds().left != sprite.getGlobalBounds().left)
+			{
+				sprite1.setPosition(sprite.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top + 15);
+			}
+			else
+			{
+				animateUD();
+				sprite1.move(0, deltaTime.asSeconds() * -fabs(mainSpeed));
+				if (rectdown.getGlobalBounds().top >= sprite.getGlobalBounds().top && rectdown.getGlobalBounds().top < sprite.getGlobalBounds().top + help)
+				{
+					sprite1.setPosition(sprite.getGlobalBounds().left + 15 + (movingRight ? (help + 0.01f) : ( -help - 0.01f)), sprite.getGlobalBounds().top - 15);
+					return false;
+				}
+			}
+			isHelp = true;
+			break;
+		}
+
+		if (rectunder.getGlobalBounds().intersects(sprite.getGlobalBounds()) && movingDown
+			&& rectunder.getGlobalBounds().left >= sprite.getGlobalBounds().left - help && rectunder.getGlobalBounds().left <= sprite.getGlobalBounds().left + help)
+		{
+			if (rectunder.getGlobalBounds().left != sprite.getGlobalBounds().left)
+			{
+				sprite1.setPosition(sprite.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top + 15);
+			}
+			else
+			{
+				animateUD();
+				sprite1.move(0, deltaTime.asSeconds() * fabs(mainSpeed));
+				if (rectunder.getGlobalBounds().top >= sprite.getGlobalBounds().top + 30 - help && rectunder.getGlobalBounds().top < sprite.getGlobalBounds().top + 30)
+				{
+					sprite1.setPosition(sprite.getGlobalBounds().left + 15 + (movingRight ? (help + 0.01f) : ( -help - 0.01f)), sprite.getGlobalBounds().top + 15);
+					return false;
+				}
+			}
+			isHelp = true;
+			break;
+		}
+
+		if (rectop.getGlobalBounds().intersects(sprite.getGlobalBounds()) && movingDown
+			&& rectop.getGlobalBounds().left >= sprite.getGlobalBounds().left - help && rectop.getGlobalBounds().left <= sprite.getGlobalBounds().left + help)
+		{
+			for (sf::Sprite& block : blocks)
+			{
+				if (block.getGlobalBounds().contains(sprite.getGlobalBounds().left + 15.0f, sprite.getGlobalBounds().top + 45.0f)) return false;
+			}
+			if (rectop.getGlobalBounds().left != sprite.getGlobalBounds().left)
+			{
+				sprite1.setPosition(sprite.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top + 15);
+			}
+			else
+			{
+				animateUD();
+				sprite1.move(0, deltaTime.asSeconds() * fabs(mainSpeed));
+				if (rectop.getGlobalBounds().top >= sprite.getGlobalBounds().top + 30 - help && rectop.getGlobalBounds().top < sprite.getGlobalBounds().top + 30)
+				{
+					sprite1.setPosition(sprite.getGlobalBounds().left + 15 + (movingRight ? (help + 0.01f) : ( -help - 0.01f)), sprite.getGlobalBounds().top + 45);
+					return false;
+				}
+			}
+			isHelp = true;
+			break;
 		}
 	}
-
 
 	return isHelp;
 }
@@ -551,7 +628,7 @@ bool Game::getOpen() const
 
 void Game::setText(int level)
 {
-	if (!font.loadFromFile("src/font.ttf")) throw std::exception("Не вдалося загрузити шрифт :(");
+	if (!font.loadFromMemory(font_ttf, font_ttf_len)) throw std::exception("Не вдалося загрузити шрифт :(");
 	text.setFont(font);
 	text.setString(std::to_string(level));
 	text.setOrigin(text.getGlobalBounds().width / 2, text.getGlobalBounds().height / 2);
@@ -563,18 +640,26 @@ void Game::setText(int level)
 void Game::smoothTextures()
 {
 	texture0.setSmooth(true);
-	texture1.setSmooth(true);
-	texture2.setSmooth(true);
-	texture3.setSmooth(true);
-	texture4.setSmooth(true);
-	texture5.setSmooth(true);
-	texture6.setSmooth(true);
-	texture7.setSmooth(true);
-	texture8.setSmooth(true);
-	texture9.setSmooth(true);
-	texture10.setSmooth(true);
-	texture11.setSmooth(true);
-	texture12.setSmooth(true);
+	for (sf::Texture& texture : texturesToMoveLR)
+	{
+		texture.setSmooth(true);
+	}
+	for (sf::Texture& texture : texturesToMoveUD)
+	{
+		texture.setSmooth(true);
+	}
+	for (sf::Texture& texture : texturesForWorkout)
+	{
+		texture.setSmooth(true);
+	}
+	for (sf::Texture& texture : deletedTextures)
+	{
+		texture.setSmooth(true);
+	}
+	for (sf::Texture& texture :reawakenedTextures)
+	{
+		texture.setSmooth(true);
+	}
 	texture13.setSmooth(true);
 	texture14.setSmooth(true);
 	texture15.setSmooth(true);
@@ -582,37 +667,6 @@ void Game::smoothTextures()
 	texture17.setSmooth(true);
 	texture18.setSmooth(true);
 	texture19.setSmooth(true);
-	texture20.setSmooth(true);
-	texture21.setSmooth(true);
-	texture22.setSmooth(true);
-	texture23.setSmooth(true);
-	texture24.setSmooth(true);
-	texture25.setSmooth(true);
-	texture26.setSmooth(true);
-	texture27.setSmooth(true);
-	texture28.setSmooth(true);
-	texture29.setSmooth(true);
-	texture30.setSmooth(true);
-	texture31.setSmooth(true);
-	texture32.setSmooth(true);
-	texture33.setSmooth(true);
-	texture34.setSmooth(true);
-	texture35.setSmooth(true);
-	texture36.setSmooth(true);
-	texture37.setSmooth(true);
-	texture38.setSmooth(true);
-	texture39.setSmooth(true);
-	texture40.setSmooth(true);
-	texture41.setSmooth(true);
-	texture42.setSmooth(true);
-	texture43.setSmooth(true);
-	texture44.setSmooth(true);
-	texture45.setSmooth(true);
-	texture46.setSmooth(true);
-	texture47.setSmooth(true);
-	texture48.setSmooth(true);
-	texture49.setSmooth(true);
-	texture50.setSmooth(true);
 }
 
 void Game::setSprite1()
@@ -624,7 +678,7 @@ void Game::setSprite1()
 
 bool Game::updateFly()
 {
-	sf::RectangleShape rect(sf::Vector2f(30.0f, 2.0f));
+	sf::RectangleShape rect(sf::Vector2f(30.0f, help));
 	rect.setPosition(sprite1.getGlobalBounds().left, sprite1.getGlobalBounds().top + 30);
 
 	sf::FloatRect intersection;
@@ -636,7 +690,7 @@ bool Game::updateFly()
 		{
 
 			sf::FloatRect area;
-			if (sprite1.getGlobalBounds().intersects(sp.getGlobalBounds(), area) && area.width < 2)
+			if (sprite1.getGlobalBounds().intersects(sp.getGlobalBounds(), area) && area.width < help)
 			{
 				int count = 0;
 				for (sf::Sprite& s : spritesWorkout)
@@ -665,7 +719,7 @@ bool Game::updateFly()
 				temp = true;
 				break;
 			}
-			if (sprite1.getGlobalBounds().intersects(sp.getGlobalBounds(), area) && area.width < 2)
+			if (sprite1.getGlobalBounds().intersects(sp.getGlobalBounds(), area) && area.width < help)
 			{
 				int count = 0;
 				for (sf::Sprite& s : spritesUD)
@@ -695,13 +749,13 @@ bool Game::updateFly()
 		
 		if (temp) break;
 		
-		if (rect.getGlobalBounds().intersects(sprite.getGlobalBounds(), intersection) && intersection.width < 2)
+		if (rect.getGlobalBounds().intersects(sprite.getGlobalBounds(), intersection) && intersection.width < help)
 		{
 			bool work = false;
 			for (sf::Sprite& sprt : spritesWorkout)
 			{
 				sf::FloatRect area;
-				if (sprite1.getGlobalBounds().intersects(sprt.getGlobalBounds(), area) && area.width > 28)
+				if (sprite1.getGlobalBounds().intersects(sprt.getGlobalBounds(), area) && area.width > 30 - help)
 				{
 					work = true;
 					break;
@@ -738,8 +792,8 @@ bool Game::updateFly()
 	{
 		sf::FloatRect intersection;
 		if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds(), intersection)
-			&& sprite1.getGlobalBounds().top <= sprite.getGlobalBounds().top + 0.75
-			&& sprite1.getGlobalBounds().top >= sprite.getGlobalBounds().top - 0.75)
+			&& sprite1.getGlobalBounds().top <= sprite.getGlobalBounds().top
+			&& sprite1.getGlobalBounds().top >= sprite.getGlobalBounds().top - help)
 		{
 			if (sprite1.getGlobalBounds().top != sprite.getGlobalBounds().top) 
 				sprite1.setPosition(sprite1.getGlobalBounds().left + 15, sprite.getGlobalBounds().top + 15);
@@ -753,12 +807,12 @@ bool Game::updateFly()
 				}
 				for (sf::Sprite& spr : spritesUD) 
 				{
-					if (rect.getGlobalBounds().intersects(spr.getGlobalBounds()) && (rect.getGlobalBounds().left != spr.getGlobalBounds().left || movingLeft || movingRight)) return false;
+					if (rect.getGlobalBounds().intersects(spr.getGlobalBounds()) && (rect.getGlobalBounds().left != spr.getGlobalBounds().left)) return false;
 				}
-				sprite1.setPosition(sprite1.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top + 15.76f);
+				sprite1.setPosition(sprite1.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top + 15.01f);
 			}
 			sf::FloatRect area;
-			if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds(), area) && area.width < 2)
+			if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds(), area) && area.width < help)
 			{
 				int counts = 0;
 				for (sf::Sprite& spr : spritesWorkout)
@@ -808,19 +862,23 @@ bool Game::updateFly()
 					}
 				}
 				if (counter == 0) return true;
-			}
-			if (sprite1.getGlobalBounds().left == sprite.getGlobalBounds().left && intersection.height < 1 && sprite1.getGlobalBounds().top < sprite.getGlobalBounds().top)
-			{
-				sf::Image img1 = (*sprite1.getTexture()).copyToImage();
-				sf::Image img2 = texture13.copyToImage();
-				for (int i = 0; i < 30; i++) {
-					for (int j = 0; j < 30; j++) {
-						if (img1.getPixel(i, j) != img2.getPixel(i, j)) return false;
+				if (rect.getGlobalBounds().intersects(sprite.getGlobalBounds()) && rect.getGlobalBounds().left == sprite.getGlobalBounds().left)
+				{
+					sf::Image img1 = sprite1.getTexture()->copyToImage();
+					sf::Image img2 = texture13.copyToImage();
+					for (int i = 0; i < 30; i++) {
+						for (int j = 0; j < 30; j++) {
+							if (img1.getPixel(i, j) != img2.getPixel(i, j)) return false;
+						}
+					}
+					if (sprite1.getGlobalBounds().top != sprite.getGlobalBounds().top - 30)
+					{
+						sprite1.setPosition(sprite1.getGlobalBounds().left + 15, sprite.getGlobalBounds().top - 15);
+						return false;
 					}
 				}
-				if (sprite1.getGlobalBounds().top != sprite.getGlobalBounds().top - 30) sprite1.setPosition(sprite1.getGlobalBounds().left + 15, sprite.getGlobalBounds().top - 15);
 			}
-			if (intersection.width < 2)
+			if (intersection.width < help)
 			{
 				int counts = 0;
 				for (sf::Sprite& spr : spritesUD)
@@ -893,7 +951,27 @@ void Game::updateMoveUD(sf::Time deltaTime)
 				break;
 			}
 		}
-		if (tempIgnore && tmp) sprite1.setTexture(texture0);
+		bool onUD = false;
+		for (sf::Sprite& sp : spritesUD)
+		{
+			if (sprite1.getGlobalBounds().intersects(sp.getGlobalBounds()) && sprite1.getGlobalBounds().left == sp.getGlobalBounds().left)
+			{
+				onUD = true;
+				break;
+			}
+		}
+		bool flew = false;
+		sf::Image img1 = texture13.copyToImage();
+		sf::Image img2 = sprite1.getTexture()->copyToImage();
+		int counter = 0;
+		for (int i = 0; i < 30; i++)
+		{
+			for (int j = 0; j < 30; j++)
+			{
+				if (img1.getPixel(i, j) == img2.getPixel(i, j)) counter++;
+			}
+		}
+		if (tempIgnore && tmp && !onUD && counter != 900) sprite1.setTexture(texture0);
 		return;
 	}
 
@@ -903,7 +981,7 @@ void Game::updateMoveUD(sf::Time deltaTime)
 	for (sf::Sprite& sprite : spritesUD)
 	{
 		if (sprite1.getGlobalBounds().left == sprite.getGlobalBounds().left  && sprite1.getGlobalBounds().top + 30 >= sprite.getGlobalBounds().top
-			&& sprite1.getGlobalBounds().top + 30 <= sprite.getGlobalBounds().top + 1 && movingUp)
+			&& sprite1.getGlobalBounds().top + 30 <= sprite.getGlobalBounds().top + help && movingUp)
 		{
 			bool temp = true;
 			for (sf::Sprite& sp : spritesUD)
@@ -930,12 +1008,12 @@ void Game::updateMoveUD(sf::Time deltaTime)
 		{
 			for (sf::Sprite& block : blocks)
 			{
-				if (movingDown && block.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top + 32))
+				if (movingDown && block.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top + 30 + help))
 				{
 					sprite1.setPosition(sprite1.getGlobalBounds().left + 15, block.getGlobalBounds().top - 15);
 					return;
 				}
-				if (movingUp && block.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top - 2))
+				if (movingUp && block.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top - help))
 				{
 					sprite1.setPosition(sprite1.getGlobalBounds().left + 15, block.getGlobalBounds().top + 45);
 					return;
@@ -945,7 +1023,7 @@ void Game::updateMoveUD(sf::Time deltaTime)
 			spriteToCenter = sprite;
 		}
 		if (sprite1.getGlobalBounds().left >= sprite.getGlobalBounds().left - 15 && sprite1.getGlobalBounds().left <= sprite.getGlobalBounds().left + 15
-			&& sprite1.getGlobalBounds().top >= sprite.getGlobalBounds().top - 31 && sprite1.getGlobalBounds().top <= sprite.getGlobalBounds().top - 29 && temp == true)
+			&& sprite1.getGlobalBounds().top == sprite.getGlobalBounds().top - 30 && temp == true)
 		{
 			spriteToCenter = sprite;
 			if (movingDown)
@@ -1006,9 +1084,9 @@ void Game::updateMoveUD(sf::Time deltaTime)
 
 void Game::centrelizing(const sf::Sprite sprite)
 {
-	if (sprite1.getGlobalBounds().left <= sprite.getGlobalBounds().left - 1 || sprite1.getGlobalBounds().left >= sprite.getGlobalBounds().left + 1)
+	if (sprite1.getGlobalBounds().left <= sprite.getGlobalBounds().left - help || sprite1.getGlobalBounds().left >= sprite.getGlobalBounds().left + help)
 	{
-		mainSpeed = sprite1.getGlobalBounds().left <= sprite.getGlobalBounds().left - 1 ? fabs(mainSpeed) : -fabs(mainSpeed);
+		mainSpeed = sprite1.getGlobalBounds().left <= sprite.getGlobalBounds().left - help ? fabs(mainSpeed) : -fabs(mainSpeed);
 		sprite1.setScale((float)sprite1.getGlobalBounds().left <= (float)sprite.getGlobalBounds().left - 1.0f ? 1.0f : -1.0f, 1.0f);
 		ignoreUD = true;
 		return;
@@ -1030,6 +1108,8 @@ void Game::animateUD()
 
 void Game::initVariables()
 {
+	framesLimit = 80;
+	help = 4.0f;
 	isFromFly = false;
 	ignoreNextLevel = false;
 	end = false;
@@ -1043,19 +1123,17 @@ void Game::initVariables()
 	movingLeft = false;
 	movingUp = false;
 	movingDown = false;
-	mainSpeed = 125.0f;
-	//mainSpeed = 0;
+	mainSpeed = 150.0f;
 	frameIndexLR = 0;
 	frameIndexUD = 0;
 	frameIndexWorkout = 0;
-	deletedBlockInterval = 9.0f;
-	reawakenedInterval = 40.0f;
-	miniAnimateInterval = 15.0f;
-	animationMoveIntervalLR = 35.0f;
-	//animationMoveIntervalLR = 350.0f;
-	animationMoveIntervalUD = 30.0f;
-	animationMoveIntervalWorkout = 35.0f;
-	texturesToMoveLR = { texture1, texture2, texture3, texture4, texture5, texture6, texture7, texture8, texture9, texture10, texture11, texture12 };
+	deletedBlockInterval = 7.0f;
+	reawakenedInterval = 20.0f;
+	miniAnimateInterval = 5.0f;
+	animationMoveIntervalLR = 30.0f;
+	animationMoveIntervalUD = 20.0f;
+	animationMoveIntervalWorkout = 25.0f;
+	texturesToMoveLR = { texture1, texture2, texture3, texture4, texture5, texture4, texture3, texture2, texture1, texture10, texture11, texture12 };
 	texturesToMoveUD = { texture21, texture22, texture23, texture24, texture25, texture26, texture25, texture24, texture23, texture22, texture21, texture27 };
 	texturesForWorkout = { texture28, texture29, texture30, texture31, texture32, texture31, texture30, texture29 };
 	deletedTextures = { texture33, texture34, texture35, texture36, texture37, texture38, texture39, texture20 };
@@ -1068,6 +1146,7 @@ void Game::setWindow(sf::Vector2i windowPosition, sf::Vector2u windowSize)
 	window.create(sf::VideoMode(32 * 30, 23 * 30 + 20), "Lode Runner");
 	window.setPosition(windowPosition);
 	window.setSize(windowSize);
+	window.setFramerateLimit(framesLimit);
 }
 
 sf::Vector2i Game::getWinpos() const
@@ -1077,11 +1156,7 @@ sf::Vector2i Game::getWinpos() const
 
 void Game::setIcon()
 {
-	std::string path = "sprites/icon.png";
-	if (!windowIcon.loadFromFile(path))
-	{
-		throw std::exception("Не вдалося загрузити картинку :(");
-	}
+	sf::Image windowIcon = texture52.copyToImage();
 	window.setIcon(windowIcon.getSize().x, windowIcon.getSize().y, windowIcon.getPixelsPtr());
 }
 
@@ -1094,7 +1169,7 @@ void Game::updateMoveLR(sf::Time deltaTime)
 			if ((movingLeft || movingRight) && sprite1.getGlobalBounds().top + 15 >= sprite.getGlobalBounds().top - 15 
 				&& sprite1.getGlobalBounds().top + 15 <= sprite.getGlobalBounds().top)
 			{
-				if (movingLeft && sprite1.getPosition().x <= 15.5 || movingRight && sprite1.getPosition().x >= 32 * 30 - 15) return;
+				if (movingLeft && sprite1.getPosition().x <= 15 + help || movingRight && sprite1.getPosition().x >= 32 * 30 - 15 - help) return;
 				for (sf::Sprite& block : blocks)
 				{
 					if (block.getGlobalBounds().contains(sprite1.getGlobalBounds().left - 0.01f, sprite1.getGlobalBounds().top + 15.0f) && movingLeft) return;
@@ -1107,13 +1182,13 @@ void Game::updateMoveLR(sf::Time deltaTime)
 				mainSpeed = -fabs(mainSpeed);
 				animateUD();
 				sprite1.move(0, deltaTime.asSeconds() * mainSpeed);
-				if (sprite1.getGlobalBounds().top >= sprite.getGlobalBounds().top - 31 && sprite1.getGlobalBounds().top <= sprite.getGlobalBounds().top - 29)
+				if (sprite1.getGlobalBounds().top >= sprite.getGlobalBounds().top - (30 + help) && sprite1.getGlobalBounds().top <= sprite.getGlobalBounds().top - (30 - help))
 				{
 					sprite1.setPosition(sprite1.getGlobalBounds().left + 15, sprite.getGlobalBounds().top - 15);
 				}
 				return;
 			}
-			if (movingLeft && sprite1.getPosition().x <= 15.5 || movingRight && sprite1.getPosition().x >= 32 * 30 - 15) return;
+			if (movingLeft && sprite1.getPosition().x <= 15 + help || movingRight && sprite1.getPosition().x >= 32 * 30 - 15 - help) return;
 			if (sprite1.getGlobalBounds().top != sprite.getGlobalBounds().top
 				&& sprite.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top + 15) && (movingRight || movingLeft))
 			{
@@ -1125,7 +1200,7 @@ void Game::updateMoveLR(sf::Time deltaTime)
 				mainSpeed = sprite1.getGlobalBounds().top + 15 > sprite.getGlobalBounds().top + 15 ? -fabs(mainSpeed) : fabs(mainSpeed);
 				animateUD();
 				sprite1.move(0, deltaTime.asSeconds() * mainSpeed);
-				if (sprite1.getGlobalBounds().top > sprite.getGlobalBounds().top - 1 && sprite1.getGlobalBounds().top < sprite.getGlobalBounds().top + 1)
+				if (sprite1.getGlobalBounds().top > sprite.getGlobalBounds().top - help && sprite1.getGlobalBounds().top < sprite.getGlobalBounds().top + help)
 				{
 					sprite1.setPosition(sprite1.getGlobalBounds().left + 15, sprite.getGlobalBounds().top + 15);
 				}
@@ -1189,12 +1264,16 @@ void Game::updateMoveLR(sf::Time deltaTime)
 	{
 		if (moveLR && !isWorkout)
 		{
-			bool lol = false;
-			if ((checkLeft() || checkRight()) && counts == 900) lol = true;
-			if (!onUD && !isLadderTexture && !lol) sprite1.setTexture(texture0);
+			bool check = false;
+			if ((checkLeft() || checkRight()) && counts == 900) check = true;
+			if (!onUD && !isLadderTexture && !check) sprite1.setTexture(texture0);
 			for (sf::Sprite& sprite : spritesWorkout)
 			{
-				if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds()) && sprite1.getGlobalBounds().top == sprite.getGlobalBounds().top) sprite1.setTexture(texture13);
+				sf::FloatRect intersection;
+				if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds(), intersection) && sprite1.getGlobalBounds().top == sprite.getGlobalBounds().top)
+				{
+					if (intersection.width > 30 - help) sprite1.setTexture(texture13);
+				}
 			}
 		}
 		moveLR = false;
@@ -1212,7 +1291,7 @@ void Game::updateMoveLR(sf::Time deltaTime)
 
 	if (movingRight)
 	{
-		if (sprite1.getPosition().x >= 32 * 30 - 15 || checkRight())
+		if (sprite1.getPosition().x >= 32 * 30 - 15 - help || checkRight())
 		{
 			if (!onUD && !onHorizontalLadder && !isLadderTexture) sprite1.setTexture(texture0);
 			sprite1.setPosition(float(left) + 15, sprite1.getGlobalBounds().top + 15);
@@ -1225,7 +1304,7 @@ void Game::updateMoveLR(sf::Time deltaTime)
 
 	if (movingLeft)
 	{
-		if (sprite1.getPosition().x <= 15.5 || checkLeft())
+		if (sprite1.getPosition().x <= 15 + help || checkLeft())
 		{
 			if (!onUD && !onHorizontalLadder && !isLadderTexture) sprite1.setTexture(texture0);
 			sprite1.setPosition(float(left) + 15, sprite1.getGlobalBounds().top + 15);
@@ -1239,12 +1318,25 @@ void Game::updateMoveLR(sf::Time deltaTime)
 	isWorkout = false;
 	for (sf::Sprite& sprite : spritesWorkout)
 	{
-		if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds()) && sprite1.getGlobalBounds().top == sprite.getGlobalBounds().top)
+		sf::FloatRect intersection;
+		if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds(), intersection) && sprite1.getGlobalBounds().top == sprite.getGlobalBounds().top)
 		{
-			isWorkout = true;
-			animateWorkout();
-			sprite1.move(deltaTime.asSeconds() * mainSpeed, 0);
-			return;
+			int counter = 0;
+			for (sf::Sprite& spr : spritesWorkout)
+			{
+				if (sprite1.getGlobalBounds().intersects(spr.getGlobalBounds()) && sprite.getGlobalBounds().getPosition() != spr.getGlobalBounds().getPosition())
+				{
+					counter++;
+					break;
+				}
+			}
+			if (!(counter == 0 && intersection.width < help))
+			{
+				isWorkout = true;
+				animateWorkout();
+				sprite1.move(deltaTime.asSeconds() * mainSpeed, 0);
+				return;
+			}
 		}
 	}
 
@@ -1256,8 +1348,8 @@ bool Game::checkRight()
 {
 	for (sf::Sprite& block : blocks)
 	{
-		if (block.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 31.0f, sprite1.getGlobalBounds().top + 0.001f)
-			|| block.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 31.0f, sprite1.getGlobalBounds().top + 29.999f))
+		if (block.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 30.0f + help, sprite1.getGlobalBounds().top + 0.001f)
+			|| block.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 30.0f + help, sprite1.getGlobalBounds().top + 29.999f))
 		{
 			return true;
 		}
@@ -1269,8 +1361,8 @@ bool Game::checkLeft()
 {
 	for (sf::Sprite& block : blocks)
 	{
-		if (block.getGlobalBounds().contains(sprite1.getGlobalBounds().left - 1.0f, sprite1.getGlobalBounds().top + 0.001f)
-			|| block.getGlobalBounds().contains(sprite1.getGlobalBounds().left - 1.0f, sprite1.getGlobalBounds().top + 29.999f))
+		if (block.getGlobalBounds().contains(sprite1.getGlobalBounds().left - help, sprite1.getGlobalBounds().top + 0.001f)
+			|| block.getGlobalBounds().contains(sprite1.getGlobalBounds().left - help, sprite1.getGlobalBounds().top + 29.999f))
 		{
 			return true;
 		}
@@ -1302,60 +1394,55 @@ void Game::animateWorkout()
 
 void Game::loadTextures()
 {
-	if (
-		!texture0.loadFromFile("sprites/move/0.png") ||
-		!texture1.loadFromFile("sprites/move/1.png") ||
-		!texture2.loadFromFile("sprites/move/2.png") ||
-		!texture3.loadFromFile("sprites/move/3.png") ||
-		!texture4.loadFromFile("sprites/move/4.png") ||
-		!texture5.loadFromFile("sprites/move/5.png") ||
-		!texture6.loadFromFile("sprites/move/6.png") ||
-		!texture7.loadFromFile("sprites/move/7.png") ||
-		!texture8.loadFromFile("sprites/move/8.png") ||
-		!texture9.loadFromFile("sprites/move/9.png") ||
-		!texture10.loadFromFile("sprites/move/10.png") ||
-		!texture11.loadFromFile("sprites/move/11.png") ||
-		!texture12.loadFromFile("sprites/move/12.png") ||
-		!texture13.loadFromFile("sprites/move/13.png") ||
-		!texture14.loadFromFile("sprites/elements/1.png") ||
-		!texture15.loadFromFile("sprites/elements/2.png") ||
-		!texture16.loadFromFile("sprites/elements/3.png") ||
-		!texture17.loadFromFile("sprites/elements/4.png") ||
-		!texture18.loadFromFile("sprites/elements/5.png") ||
-		!texture19.loadFromFile("sprites/elements/6.png") ||
-		!texture20.loadFromFile("sprites/elements/7.png") ||
-		!texture21.loadFromFile("sprites/move/14.png") ||
-		!texture22.loadFromFile("sprites/move/15.png") ||
-		!texture23.loadFromFile("sprites/move/16.png") ||
-		!texture24.loadFromFile("sprites/move/17.png") ||
-		!texture25.loadFromFile("sprites/move/18.png") ||
-		!texture26.loadFromFile("sprites/move/19.png") ||
-		!texture27.loadFromFile("sprites/move/20.png") ||
-		!texture28.loadFromFile("sprites/move/21.png") ||
-		!texture29.loadFromFile("sprites/move/22.png") ||
-		!texture30.loadFromFile("sprites/move/23.png") ||
-		!texture31.loadFromFile("sprites/move/24.png") ||
-		!texture32.loadFromFile("sprites/move/25.png") ||
-		!texture33.loadFromFile("sprites/elements/8.png") ||
-		!texture34.loadFromFile("sprites/elements/9.png") ||
-		!texture35.loadFromFile("sprites/elements/10.png") ||
-		!texture36.loadFromFile("sprites/elements/11.png") ||
-		!texture37.loadFromFile("sprites/elements/12.png") ||
-		!texture38.loadFromFile("sprites/elements/13.png") ||
-		!texture39.loadFromFile("sprites/elements/14.png") ||
-		!texture40.loadFromFile("sprites/elements/15.png") ||
-		!texture41.loadFromFile("sprites/elements/16.png") ||
-		!texture42.loadFromFile("sprites/elements/17.png") ||
-		!texture43.loadFromFile("sprites/elements/18.png") ||
-		!texture44.loadFromFile("sprites/elements/19.png") ||
-		!texture45.loadFromFile("sprites/elements/20.png") ||
-		!texture46.loadFromFile("sprites/elements/21.png") ||
-		!texture47.loadFromFile("sprites/elements/22.png") ||
-		!texture48.loadFromFile("sprites/elements/23.png") ||
-		!texture49.loadFromFile("sprites/elements/24.png") ||
-		!texture50.loadFromFile("sprites/elements/25.png") ||
-		!texture51.loadFromFile("sprites/elements/26.png")
-		)
+	if (!texture0.loadFromMemory(__0_png, __0_png_len) ||
+		!texture1.loadFromMemory(__1_png, __1_png_len) ||
+		!texture2.loadFromMemory(__2_png, __2_png_len) ||
+		!texture3.loadFromMemory(__3_png, __3_png_len) ||
+		!texture4.loadFromMemory(__4_png, __4_png_len) ||
+		!texture5.loadFromMemory(__5_png, __5_png_len) ||
+		!texture10.loadFromMemory(__10_png, __10_png_len) ||
+		!texture11.loadFromMemory(__11_png, __11_png_len) ||
+		!texture12.loadFromMemory(__12_png, __12_png_len) ||
+		!texture13.loadFromMemory(__13_png, __13_png_len) ||
+		!texture14.loadFromMemory(__14_png, __14_png_len) ||
+		!texture15.loadFromMemory(__15_png, __15_png_len) ||
+		!texture16.loadFromMemory(__16_png, __16_png_len) ||
+		!texture17.loadFromMemory(__17_png, __17_png_len) ||
+		!texture18.loadFromMemory(__18_png, __18_png_len) ||
+		!texture19.loadFromMemory(__19_png, __19_png_len) ||
+		!texture20.loadFromMemory(__20_png, __20_png_len) ||
+		!texture21.loadFromMemory(__21_png, __21_png_len) ||
+		!texture22.loadFromMemory(__22_png, __22_png_len) ||
+		!texture23.loadFromMemory(__23_png, __23_png_len) ||
+		!texture24.loadFromMemory(__24_png, __24_png_len) ||
+		!texture25.loadFromMemory(__25_png, __25_png_len) ||
+		!texture26.loadFromMemory(__26_png, __26_png_len) ||
+		!texture27.loadFromMemory(__27_png, __27_png_len) ||
+		!texture28.loadFromMemory(__28_png, __28_png_len) ||
+		!texture29.loadFromMemory(__29_png, __29_png_len) ||
+		!texture30.loadFromMemory(__30_png, __30_png_len) ||
+		!texture31.loadFromMemory(__31_png, __31_png_len) ||
+		!texture32.loadFromMemory(__32_png, __32_png_len) ||
+		!texture33.loadFromMemory(__33_png, __33_png_len) ||
+		!texture34.loadFromMemory(__34_png, __34_png_len) ||
+		!texture35.loadFromMemory(__35_png, __35_png_len) ||
+		!texture36.loadFromMemory(__36_png, __36_png_len) ||
+		!texture37.loadFromMemory(__37_png, __37_png_len) ||
+		!texture38.loadFromMemory(__38_png, __38_png_len) ||
+		!texture39.loadFromMemory(__39_png, __39_png_len) ||
+		!texture40.loadFromMemory(__40_png, __40_png_len) ||
+		!texture41.loadFromMemory(__41_png, __41_png_len) ||
+		!texture42.loadFromMemory(__42_png, __42_png_len) ||
+		!texture43.loadFromMemory(__43_png, __43_png_len) ||
+		!texture44.loadFromMemory(__44_png, __44_png_len) ||
+		!texture45.loadFromMemory(__45_png, __45_png_len) ||
+		!texture46.loadFromMemory(__46_png, __46_png_len) ||
+		!texture47.loadFromMemory(__47_png, __47_png_len) ||
+		!texture48.loadFromMemory(__48_png, __48_png_len) ||
+		!texture49.loadFromMemory(__49_png, __49_png_len) ||
+		!texture50.loadFromMemory(__50_png, __50_png_len) ||
+		!texture51.loadFromMemory(__51_png, __51_png_len) ||
+		!texture52.loadFromMemory(__52_png, __52_png_len))
 	{
 		throw std::exception("Не вдалося загрузити картинку :(");
 	}

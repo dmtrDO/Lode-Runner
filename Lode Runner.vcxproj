@@ -152,18 +152,20 @@
       <AssemblyDebug>false</AssemblyDebug>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)src\levels\*.txt" "$(SolutionDir)bin\$(Platform)\$(Configuration)\src\levels" /Y
-xcopy /Y /S "$(SolutionDir)bin\$(Platform)\$(Configuration)" "$(SolutionDir)Lode Runner\LR"
-</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\font.cpp" />
     <ClCompile Include="src\Game.cpp" />
+    <ClCompile Include="src\images.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\Game.h" />
+    <ClInclude Include="src\images.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="sprites\icon.ico" />

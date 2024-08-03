@@ -5,6 +5,8 @@
 #include <cmath>
 #include <string>
 #include <fstream>
+#include "font.h"
+#include "images.h"
 
 class Game
 {
@@ -22,7 +24,6 @@ public:
 	sf::Vector2i getWinpos() const;
 
 private:
-
 	bool ignoreNextLevel;
 
 	bool open;
@@ -33,7 +34,6 @@ private:
 	///// 23 x 32 blocks
    ///// 1 block = 30 x 30 pixels
 
-	sf::Image windowIcon;
 	void setIcon();
 
 	sf::Clock deltaTimeClock;
@@ -46,10 +46,6 @@ private:
 	sf::Texture texture3;
 	sf::Texture texture4;
 	sf::Texture texture5;
-	sf::Texture texture6;
-	sf::Texture texture7;
-	sf::Texture texture8;
-	sf::Texture texture9;
 	sf::Texture texture10;
 	sf::Texture texture11;
 	sf::Texture texture12;
@@ -92,6 +88,7 @@ private:
 	sf::Texture texture49;
 	sf::Texture texture50;
 	sf::Texture texture51;
+	sf::Texture texture52;
 
 	void smoothTextures();
 
@@ -193,6 +190,9 @@ private:
 	sf::Vector2i winpos;
 
 	bool updateHelp(sf::Time& deltaTime);
+	float help;
+
+	int framesLimit;
 };
 
 

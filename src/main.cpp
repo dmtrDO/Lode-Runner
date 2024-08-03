@@ -15,8 +15,7 @@ int main()
     double k = static_cast<double>(bestMode.height) / static_cast<double>(h);
     double width = k * static_cast<double>(w);
 
-    sf::Vector2i winpos = sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - width) / 2),
-        static_cast<int>((sf::VideoMode::getDesktopMode().height - bestMode.height) / 2 - 2 * placeForExpr));
+    sf::Vector2i winpos = sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - width) / 2), 0);
 
     sf::Vector2u winsize = sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr);
 
@@ -31,14 +30,14 @@ int main()
         std::ifstream file;
         while (true)
         {
-            std::string path = "src/levels/level" + std::to_string(size) + ".txt";
+            std::string path = "levels/level" + std::to_string(size) + ".txt";
             file.open(path);
             if (!file.is_open()) break;
             size++;
             file.close();
         }
 
-        std::string savePath = "src/levels/.save.txt";
+        std::string savePath = "levels/.save.txt";
         std::ifstream isave(savePath);
         std::string lvl;
         isave >> lvl;
@@ -52,7 +51,7 @@ int main()
             osave << lvl;
             osave.close();
             if (!open) break;
-            std::string path = "src/levels/level" + std::to_string(i) + ".txt";
+            std::string path = "levels/level" + std::to_string(i) + ".txt";
             Game game(path, i, winpos, winsize);
             while (game.window.isOpen())
             {
