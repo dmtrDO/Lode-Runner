@@ -13,52 +13,21 @@ void Game::handle()
 		{
 		case sf::Event::Closed:
 			window.close();
-			open = false;
 			break;
 		case sf::Event::KeyPressed:
-			if (event.key.code == sf::Keyboard::Key::Escape) restart();
-			if (event.key.code == sf::Keyboard::Key::Right)
-			{
-				movingRight = true;
-			}
-			if (event.key.code == sf::Keyboard::Key::Left)
-			{
-				movingLeft = true;
-			}
-			if (event.key.code == sf::Keyboard::Key::Up)
-			{
-				movingUp = true;
-			}
-			if (event.key.code == sf::Keyboard::Key::Down)
-			{
-				movingDown = true;
-			}
-			if (event.key.code == sf::Keyboard::Key::Space)
-			{
-				space = true;
-			}
+			if (event.key.code == sf::Keyboard::Key::Escape) isRestart = true;
+			if (event.key.code == sf::Keyboard::Key::Right) movingRight = true;
+			if (event.key.code == sf::Keyboard::Key::Left) movingLeft = true;
+			if (event.key.code == sf::Keyboard::Key::Up) movingUp = true;
+			if (event.key.code == sf::Keyboard::Key::Down) movingDown = true;
+			if (event.key.code == sf::Keyboard::Key::Space)	space = true;
 			break;
 		case sf::Event::KeyReleased:
-			if (event.key.code == sf::Keyboard::Key::Right)
-			{
-				movingRight = false;
-			}
-			if (event.key.code == sf::Keyboard::Key::Left)
-			{
-				movingLeft = false;
-			}
-			if (event.key.code == sf::Keyboard::Key::Up)
-			{
-				movingUp = false;
-			}
-			if (event.key.code == sf::Keyboard::Key::Down)
-			{
-				movingDown = false;
-			}
-			if (event.key.code == sf::Keyboard::Key::Space)
-			{
-				space = false;
-			}
+			if (event.key.code == sf::Keyboard::Key::Right) movingRight = false;
+			if (event.key.code == sf::Keyboard::Key::Left) movingLeft = false;
+			if (event.key.code == sf::Keyboard::Key::Up) movingUp = false;
+			if (event.key.code == sf::Keyboard::Key::Down) movingDown = false;
+			if (event.key.code == sf::Keyboard::Key::Space) space = false;
 			break;
 		}
 	}
@@ -66,50 +35,70 @@ void Game::handle()
 
 void Game::update()
 {	
-	animateDeleted();
+	//std::cout << sprite1.getGlobalBounds().left << "\t" << sprite1.getGlobalBounds().top << "\n";
+
+	if (window.hasFocus()) updateFPS();
+	if (!window.hasFocus())
+	{
+		movingDown = false;
+		movingUp = false;
+		movingLeft = false;
+		movingRight = false;
+		std::this_thread::sleep_for(std::chrono::seconds(1));
+		deltaTimeClock.restart();
+	}
 
 	updateDeath();
-	if (end) restart();
-	if (sprite1.getGlobalBounds().top + 30 <= 0) { winpos = window.getPosition(); window.close(); }
+	if (sprite1.getGlobalBounds().top + 30 <= 0) { isWin = true; return; }
+	if (isRestart || isWin) return;
 
+	if (window.hasFocus()) animateDeleted();
 	if (!isVictory) updateGold();
 
 	sf::Time deltaTime = deltaTimeClock.restart();
-
-	if (updateFly())
+	if (updateFly() && window.hasFocus())
 	{
 		sprite1.move(0, fabs(mainSpeed) * deltaTime.asSeconds());
 		sprite1.setTexture(texture13);
 		isFromFly = true;
 		return;
 	}
-
-	if (updateHelp(deltaTime)) return;
-
+	//if (updateHelp(deltaTime)) return;
 	updateMoveLR(deltaTime);
 	updateMoveUD(deltaTime);
 	updateSpace(deltaTime);
-
-	for (sf::Sprite& sprite : spritesWorkout)
-	{
-		if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds()) && sprite1.getGlobalBounds().top == sprite.getGlobalBounds().top)
-		{
-			isFromFly = false;
-			break;
-		}
-	}
-	
-	int counter = 0;
-	for (sf::Sprite& sprite : spritesUD)
-		if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds())) counter++; 
-	if (isFromFly && counter == 0) sprite1.setTexture(texture13);
-	isFromFly = false;
+	updateFlyTexture();
 }
 
 void Game::draw()
 {
 	window.clear(sf::Color::Black);
 
+	drawLevel();
+	if (isWin || isRestart) drawTransition();
+
+	window.display();
+}
+
+//////////////////////////////            MAIN FUNCTIONS END            //////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+
+Game::Game()
+{
+	font.loadFromMemory(font_ttf, font_ttf_len);
+	loadTextures();
+	initVariables();
+	setWindow();
+	setIcon();
+	setText(getLevel());
+	setSprites(getLevel());
+	setSprite1();
+	setEnemies();
+	smoothTextures();
+}
+
+void Game::drawLevel()
+{
 	for (int i = 0; i < levelSprites.size(); i++)
 	{
 		window.draw(levelSprites[i]);
@@ -128,25 +117,104 @@ void Game::draw()
 	}
 
 	window.draw(text);
-
-	window.display();
 }
 
-//////////////////////////////            MAIN FUNCTIONS END            //////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
-
-Game::Game(std::string path, int level, sf::Vector2i windowPosition, sf::Vector2u windowSize)
+void Game::updateFPS()
 {
-	pathToLevel = path;
-	loadTextures();
-	initVariables();
-	setWindow(windowPosition, windowSize);
-	setIcon();
-	setSprites();
-	setSprite1();
-	setEnemies();
-	smoothTextures();
-	setText(level);
+	fps++;
+	if (framesClock.getElapsedTime().asSeconds() >= 1.0f)
+	{
+		//std::cout << fps << "\n";
+		if (fps >= 55)
+		{
+			help = 3.0f;
+			reawakenedInterval = 25.0f;
+			miniAnimateInterval = 5.0f;
+			animationMoveIntervalLR = 30.0f;
+			animationMoveIntervalUD = 20.0f;
+			animationMoveIntervalWorkout = 25.0f;
+		}
+		else if (fps >= 40 && fps < 55)
+		{
+			help = 4.0f;
+			reawakenedInterval = 22.5f;
+			miniAnimateInterval = 4.5f;
+			animationMoveIntervalLR = 27.5f;
+			animationMoveIntervalUD = 18.0f;
+			animationMoveIntervalWorkout = 23.0f;
+		}
+		else if (fps >= 30 && fps < 40)
+		{
+			help = 5.0f;
+			reawakenedInterval = 20.0f;
+			miniAnimateInterval = 4.0f;
+			animationMoveIntervalLR = 25.0f;
+			animationMoveIntervalUD = 16.5f;
+			animationMoveIntervalWorkout = 21.0f;
+		}
+		else if (fps >= 20 && fps < 30)
+		{
+			help = 6.0f;
+			reawakenedInterval = 18.5f;
+			miniAnimateInterval = 3.5f;
+			animationMoveIntervalLR = 23.0f;
+			animationMoveIntervalUD = 15.0f;
+			animationMoveIntervalWorkout = 19.5f;
+		}
+		else if (fps >= 10 && fps < 20)
+		{
+			help = 10.0f;
+			reawakenedInterval = 18.0f;
+			miniAnimateInterval = 3.0f;
+			animationMoveIntervalLR = 21.0f;
+			animationMoveIntervalUD = 13.5f;
+			animationMoveIntervalWorkout = 18.0f;
+		}
+		else
+			showError(L"Too few frames per second for playing");
+		fps = 0;
+		framesClock.restart();
+	}
+}
+
+void Game::showError(std::wstring finalMessage)
+{
+	window.close();
+	sf::RenderWindow errWindow(sf::VideoMode::getFullscreenModes().back(), "Error");
+	errWindow.setPosition(sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - errWindow.getSize().x) / 2), 0));
+
+	int num = 30;
+	sf::Clock terminateClock;
+	sf::Clock secondsClock;
+	std::wstring message(finalMessage + L"\nThis program will auto close in " + std::to_wstring(num));
+
+	while (errWindow.isOpen() && terminateClock.getElapsedTime().asSeconds() <= 31.0f)
+	{
+		sf::Event event;
+		while (errWindow.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+			{
+				errWindow.close();
+				window.close();
+			}
+		}
+		if (secondsClock.getElapsedTime().asSeconds() >= 1.0f)
+		{
+			secondsClock.restart();
+			num--;
+			message = finalMessage + L"\nThis program will auto close in " + std::to_wstring(num);
+		}
+
+		sf::Text finalText(message, font);
+		finalText.setFillColor(sf::Color::Magenta);
+		finalText.setPosition((errWindow.getSize().x - finalText.getGlobalBounds().width) / 2, 
+							  (errWindow.getSize().y - finalText.getGlobalBounds().height) / 2);
+		errWindow.clear(sf::Color::Black);
+		errWindow.draw(finalText);
+		errWindow.display();
+	}
+	std::exit(1);
 }
 
 bool Game::updateHelp(sf::Time& deltaTime)
@@ -248,30 +316,14 @@ bool Game::updateHelp(sf::Time& deltaTime)
 	return isHelp;
 }
 
-void Game::restart()
-{
-	ignoreNextLevel = true;
-	winpos = window.getPosition();
-	window.close();
-}
-
-bool Game::isIgnoreLevel() const
-{
-	return ignoreNextLevel;
-}
-
 void Game::updateDeath()
 {
 	for (sf::Sprite& sprite : spaceBlocks)
 	{
-		sf::FloatRect intersection;
-		if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds(), intersection))
+		if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds()))
 		{
-			if (intersection.height * intersection.width >= 60)
-			{
-				end = true;
-				return;
-			}
+			isRestart = true;
+			return;
 		}
 	}
 	for (sf::Sprite& sprite : enemies)
@@ -282,7 +334,7 @@ void Game::updateDeath()
 			float area = intersection.width * intersection.height;
 			if (area >= 350)
 			{
-				end = true;
+				isRestart = true;
 				return;
 			}
 		}
@@ -294,38 +346,45 @@ void Game::updateSpace(sf::Time deltaTime)
 	if (space)
 	{
 		int vector = static_cast<int>(sprite1.getScale().x);
-		for (sf::Sprite& block : forFly)
+		for (sf::Sprite& sprite : spaceBlocks)
 		{
-			if (block.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top + 30))
+			sf::RectangleShape left(sf::Vector2f(60.0f, 1.0f)), right(sf::Vector2f(60.0f, 1.0f));
+			left.setPosition(sprite.getGlobalBounds().left + 15 - 55, sprite.getGlobalBounds().top - 1.0f);
+			right.setPosition(sprite.getGlobalBounds().left + 10, sprite.getGlobalBounds().top - 1.0f);
+			sf::FloatRect intersection;
+			if ((sprite1.getGlobalBounds().intersects(left.getGlobalBounds(), intersection) && intersection.width == 30.0f && vector == 1)
+				|| (sprite1.getGlobalBounds().intersects(right.getGlobalBounds(), intersection) && intersection.width == 30.0f && vector == -1))
 			{
-				for (sf::Sprite& spaced : spaceBlocks)
+				if (checkSpace(sprite)) return;
+				if (spaceTime.getElapsedTime().asMilliseconds() < 250) return;
+				else spaceTime.restart();
+				sf::FloatRect area; 
+				sf::RectangleShape under(sf::Vector2f(30.0f, 1.0f));
+				under.setPosition(sprite1.getGlobalBounds().left, sprite1.getGlobalBounds().top + 30);
+				if (under.getGlobalBounds().intersects(sprite.getGlobalBounds())) 
 				{
-					for (sf::Sprite& sprite : forFly)
-					{
-						//if (spaced.getGlobalBounds().contains(sprite.getGlobalBounds().left + 15, sprite.getGlobalBounds().top + 45)) return;
-					}
-					/*for (sf::Sprite& sprite : spritesWorkout)
-					{
-						if (sprite.getGlobalBounds().contains(spaced.getGlobalBounds().left + 15, spaced.getGlobalBounds().top) + 45) return;
-					}*/
-					if (sprite1.getGlobalBounds().left + 20 >= block.getGlobalBounds().left + 15 && sprite1.getGlobalBounds().left + 20 <= block.getGlobalBounds().left + 30
-						&& spaced.getGlobalBounds().contains(block.getGlobalBounds().left + 45, block.getGlobalBounds().top + 15) && vector == 1)
-					{
-						sprite1.setPosition(block.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top + 15);
-						removeBlock(spaced);
-						return;
-					}
-					if (sprite1.getGlobalBounds().left + 15 >= block.getGlobalBounds().left && sprite1.getGlobalBounds().left + 15 <= block.getGlobalBounds().left + 15
-						&& spaced.getGlobalBounds().contains(block.getGlobalBounds().left - 15, block.getGlobalBounds().top + 15) && vector == -1)
-					{
-						sprite1.setPosition(block.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top + 15);
-						removeBlock(spaced);
-						return;
-					}
+					float left = vector == 1 ? sprite.getGlobalBounds().left - 30 : sprite.getGlobalBounds().left + 30;
+					sprite1.setPosition(left + 15, sprite1.getGlobalBounds().top + 15);
 				}
+				removeBlock(sprite);
+				return;
 			}
 		}
 	}
+}
+
+bool Game::checkSpace(sf::Sprite& sprite)
+{
+	if (sprite1.getGlobalBounds().top != sprite.getGlobalBounds().top - 30) return true;
+	for (sf::Sprite& spr : forFly)
+	{
+		if (sprite.getGlobalBounds().contains(spr.getGlobalBounds().left + 15, spr.getGlobalBounds().top + 45)) return true;
+	}
+	for (sf::Sprite& spr : spritesWorkout)
+	{
+		if (sprite.getGlobalBounds().contains(spr.getGlobalBounds().left + 15, spr.getGlobalBounds().top + 45)) return true;
+	}
+	return false;
 }
 
 void Game::removeBlock(sf::Sprite& spaced)
@@ -496,7 +555,20 @@ void Game::updateGold()
 		}
 		for (sf::Sprite& sprite : forFly)
 		{
-			if (sprite.getGlobalBounds().top < 0) sprite.setPosition(sprite.getGlobalBounds().left, sprite.getGlobalBounds().top + 2000);
+			if (sprite.getGlobalBounds().top < 0)
+			{
+				sf::Image img1 = texture16.copyToImage();
+				sf::Image img2 = sprite.getTexture()->copyToImage();
+				int counter = 0;
+				for (int i = 0; i < 30; i++)
+				{
+					for (int j = 0; j < 30; j++)
+					{
+						if (img1.getPixel(i, j) == img2.getPixel(i, j)) counter++;
+					}
+				}
+				if (counter == 900) sprite.setPosition(sprite.getGlobalBounds().left, sprite.getGlobalBounds().top + 2000);
+			}
 		}
 		isVictory = true;
 		return;
@@ -508,7 +580,7 @@ void Game::updateGold()
 		if (sprite1.getGlobalBounds().intersects(goldSprites[i].getGlobalBounds(), intersection))
 		{
 			float area = intersection.width * intersection.height;
-			if (area >= 800)
+			if (area >= 700)
 			{
 				for (int j = 0; j < levelSprites.size(); j++)
 				{
@@ -523,10 +595,20 @@ void Game::updateGold()
 	}
 }
 
-void Game::setSprites()
+void Game::setSprites(int level)
 {
-	std::ifstream file(pathToLevel);
-	if (!file.is_open()) throw std::exception("Не вдалося відкрити файл :(");
+	levelSprites.clear();
+	enemies.clear();
+	spaceBlocks.clear();
+	goldSprites.clear();
+	spritesUD.clear();
+	blocks.clear();
+	forFly.clear();
+	spritesWorkout.clear();
+
+	std::wstring path = L"levels/level" + std::to_wstring(level) + L".txt";
+	std::ifstream file(path);
+	if (!file.is_open()) showError(L"Error file loading: " + path);
 
 	std::vector<sf::Vector2f> vectorOfPositions;
 	for (int i = 0; i < 23; i++)
@@ -538,9 +620,14 @@ void Game::setSprites()
 	}
 	int counter = 0;
 	char ch;
+	bool isCorrect1 = true;
+	bool isCorrect2 = true;
 	while (file.get(ch))
 	{
 		if (!std::isdigit(ch) && ch != 'i') continue;
+
+		if (counter < 22 * 32 && ch == '9' && isCorrect1 == true) isCorrect1 = false;
+		if (counter >= 22 * 32 && ch != '9' && isCorrect2 == true) isCorrect2 = false;
 
 		bool udbool = false;
 		bool blocksBool = false;
@@ -603,6 +690,8 @@ void Game::setSprites()
 			break;
 		}
 
+		if (counter == vectorOfPositions.size()) showError(L"Error in " + path + L"\nThe field must be 23 x 32");
+
 		if (victoryUDBool)
 			sprite.setPosition(vectorOfPositions[counter].x, vectorOfPositions[counter].y - 2000);
 		else sprite.setPosition(vectorOfPositions[counter]);
@@ -616,19 +705,16 @@ void Game::setSprites()
 		if (blocksBool) blocks.push_back(sprite);
 		if (notFly || victoryUDBool) forFly.push_back(sprite);
 		if (workout) spritesWorkout.push_back(sprite);
-
+		
 		counter++;
 	}
-}
-
-bool Game::getOpen() const
-{
-	return open;
+	if (counter != 23 * 32) showError(L"Error in " + path + L"\nThe field must be 23 x 32");
+	if (isCorrect1 == false) showError(L"Error in " + path + L"\nSymbols '9' should be only at the very bottom");
+	if (isCorrect2 == false) showError(L"Error in " + path + L"\nThe last row should consist only of '9'");
 }
 
 void Game::setText(int level)
 {
-	if (!font.loadFromMemory(font_ttf, font_ttf_len)) throw std::exception("Не вдалося загрузити шрифт :(");
 	text.setFont(font);
 	text.setString(std::to_string(level));
 	text.setOrigin(text.getGlobalBounds().width / 2, text.getGlobalBounds().height / 2);
@@ -674,6 +760,24 @@ void Game::setSprite1()
 	sprite1.setOrigin(15, 15);
 	sprite1.setTexture(texture0);
 	sprite1.setPosition(mainPosition.x + 15, mainPosition.y + 15);
+}
+
+void Game::updateFlyTexture()
+{
+	for (sf::Sprite& sprite : spritesWorkout)
+	{
+		if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds()) && sprite1.getGlobalBounds().top == sprite.getGlobalBounds().top)
+		{
+			isFromFly = false;
+			break;
+		}
+	}
+
+	int counter = 0;
+	for (sf::Sprite& sprite : spritesUD)
+		if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds())) counter++;
+	if (isFromFly && counter == 0) sprite1.setTexture(texture13);
+	isFromFly = false;
 }
 
 bool Game::updateFly()
@@ -855,27 +959,24 @@ bool Game::updateFly()
 				int counter = 0;
 				for (sf::Sprite& ladder : spritesUD)
 				{
-					if (sprite1.getGlobalBounds().intersects(ladder.getGlobalBounds()) && ladder.getGlobalBounds().getPosition() != sprite.getGlobalBounds().getPosition())
+					if (ladder.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 15, sprite1.getGlobalBounds().top + 16) 
+						&& ladder.getGlobalBounds().getPosition() != sprite.getGlobalBounds().getPosition())
 					{
 						counter++;
 						break;
 					}
 				}
-				if (counter == 0) return true;
-				if (rect.getGlobalBounds().intersects(sprite.getGlobalBounds()) && rect.getGlobalBounds().left == sprite.getGlobalBounds().left)
+				if (counter == 0)
 				{
-					sf::Image img1 = sprite1.getTexture()->copyToImage();
-					sf::Image img2 = texture13.copyToImage();
-					for (int i = 0; i < 30; i++) {
-						for (int j = 0; j < 30; j++) {
-							if (img1.getPixel(i, j) != img2.getPixel(i, j)) return false;
+					for (sf::Sprite& sprite : forFly)
+					{
+						if (rect.getGlobalBounds().intersects(sprite.getGlobalBounds()))
+						{
+							sprite1.setPosition(sprite1.getGlobalBounds().left + 15, sprite.getGlobalBounds().top - 15);
+							return false;
 						}
 					}
-					if (sprite1.getGlobalBounds().top != sprite.getGlobalBounds().top - 30)
-					{
-						sprite1.setPosition(sprite1.getGlobalBounds().left + 15, sprite.getGlobalBounds().top - 15);
-						return false;
-					}
+					return true;
 				}
 			}
 			if (intersection.width < help)
@@ -1108,50 +1209,116 @@ void Game::animateUD()
 
 void Game::initVariables()
 {
-	framesLimit = 80;
-	help = 4.0f;
+	screenFade.setTexture(texture20);
+	screenFade.setScale(32.0f, 22.0f);
+	transitionSpeed = 15;
+	isDrawnFade = false;
+	isWin = false;
+	isRestart = false;
+	opacity = 25;
+	level = getLevel();
+	framesLimit = 70;
+	help = 3.0f;
 	isFromFly = false;
-	ignoreNextLevel = false;
-	end = false;
 	space = false;
 	isVictory = false;
 	isWorkout = false;
-	open = true;
 	ignoreUD = false;
 	moveLR = false;
 	movingRight = false;
 	movingLeft = false;
 	movingUp = false;
 	movingDown = false;
-	mainSpeed = 150.0f;
+	mainSpeed = 130.0f;
 	frameIndexLR = 0;
 	frameIndexUD = 0;
 	frameIndexWorkout = 0;
 	deletedBlockInterval = 7.0f;
-	reawakenedInterval = 20.0f;
+	reawakenedInterval = 25.0f;
 	miniAnimateInterval = 5.0f;
 	animationMoveIntervalLR = 30.0f;
 	animationMoveIntervalUD = 20.0f;
 	animationMoveIntervalWorkout = 25.0f;
+	deletedTextures = { texture33, texture34, texture35, texture36, texture37, texture38, texture39, texture20 };
+	reawakenedTextures = { texture40, texture41, texture42, texture43, texture44, texture45, texture46, texture47, texture48, texture49, texture50, texture51, texture15 };
 	texturesToMoveLR = { texture1, texture2, texture3, texture4, texture5, texture4, texture3, texture2, texture1, texture10, texture11, texture12 };
 	texturesToMoveUD = { texture21, texture22, texture23, texture24, texture25, texture26, texture25, texture24, texture23, texture22, texture21, texture27 };
 	texturesForWorkout = { texture28, texture29, texture30, texture31, texture32, texture31, texture30, texture29 };
-	deletedTextures = { texture33, texture34, texture35, texture36, texture37, texture38, texture39, texture20 };
-	reawakenedTextures = { texture40, texture41, texture42, texture43, texture44, texture45, texture46, texture47, texture48, texture49, texture50, texture51, texture15 };
+
+	int num = 20;
+
+	for (sf::Texture& texture : texturesForWorkout) {
+		sf::Image image = texture.copyToImage();
+		for (int i = 0; i < 30; i++) {
+			for (int j = 0; j < 30; j++) {
+				sf::Color pixelColor = image.getPixel(i, j);
+				if (pixelColor.b < num && pixelColor.g < num && pixelColor.r < num) image.setPixel(i, j, sf::Color::Transparent);
+			}
+		} 
+		texture.loadFromImage(image);
+	}
+	for (sf::Texture& texture : texturesToMoveLR) {
+		sf::Image image = texture.copyToImage();
+		for (int i = 0; i < 30; i++) {
+			for (int j = 0; j < 30; j++) {
+				sf::Color pixelColor = image.getPixel(i, j);
+				if (pixelColor.b < num && pixelColor.g < num && pixelColor.r < num) image.setPixel(i, j, sf::Color::Transparent);
+			}
+		}
+		texture.loadFromImage(image);
+	}
+	for (sf::Texture& texture : texturesToMoveUD) {
+		sf::Image image = texture.copyToImage();
+		for (int i = 0; i < 30; i++) {
+			for (int j = 0; j < 30; j++) {
+				sf::Color pixelColor = image.getPixel(i, j);
+				if (pixelColor.b < num && pixelColor.g < num && pixelColor.r < num) image.setPixel(i, j, sf::Color::Transparent);
+			}
+		}
+		texture.loadFromImage(image);
+	}
+	sf::Image image0 = texture0.copyToImage();
+	for (int i = 0; i < 30; i++) {
+		for (int j = 0; j < 30; j++) {
+			sf::Color pixelColor = image0.getPixel(i, j);
+			if (pixelColor.b < num && pixelColor.g < num && pixelColor.r < num) image0.setPixel(i, j, sf::Color::Transparent);
+		}
+	}
+	texture0.loadFromImage(image0);
+	sf::Image image13 = texture13.copyToImage();
+	for (int i = 0; i < 30; i++) {
+		for (int j = 0; j < 30; j++) {
+			sf::Color pixelColor = image13.getPixel(i, j);
+			if (pixelColor.b < num && pixelColor.g < num && pixelColor.r < num) image13.setPixel(i, j, sf::Color::Transparent);
+		}
+	}
+	texture13.loadFromImage(image13);
 }
 
-void Game::setWindow(sf::Vector2i windowPosition, sf::Vector2u windowSize)
+void Game::setWindow()
 {
-	for (int i = 0; i < 5; i++) window.create(sf::VideoMode(0, 0), "", sf::Style::None);
+	int placeForExpr = 20;
+	unsigned int w = 32 * 30, h = 23 * 30;
+	sf::VideoMode bestMode;
+	for (sf::VideoMode mode : sf::VideoMode::getFullscreenModes())
+	{
+		if (mode.height >= sf::VideoMode::getDesktopMode().height - 2 * placeForExpr) continue;
+		bestMode = mode;
+		break;
+	}
+	double k = static_cast<double>(bestMode.height) / static_cast<double>(h);
+	double width = k * static_cast<double>(w);
+
+													/*			 //  for creating and test levels
+	winpos = sf::Vector2i(1215, 330);                   /////////////////////////////////////////////////////////////
+	winsize = sf::Vector2u(500 * 32 / 23, 500);        /////////////////////////////////////////////////////////////
+
+													*/
+
 	window.create(sf::VideoMode(32 * 30, 23 * 30 + 20), "Lode Runner");
-	window.setPosition(windowPosition);
-	window.setSize(windowSize);
+	window.setPosition(sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - width) / 2), 0));
+	window.setSize(sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr));
 	window.setFramerateLimit(framesLimit);
-}
-
-sf::Vector2i Game::getWinpos() const
-{
-	return winpos;
 }
 
 void Game::setIcon()
@@ -1294,6 +1461,7 @@ void Game::updateMoveLR(sf::Time deltaTime)
 		if (sprite1.getPosition().x >= 32 * 30 - 15 - help || checkRight())
 		{
 			if (!onUD && !onHorizontalLadder && !isLadderTexture) sprite1.setTexture(texture0);
+			sprite1.setScale(1, 1);
 			sprite1.setPosition(float(left) + 15, sprite1.getGlobalBounds().top + 15);
 			return;
 		}
@@ -1307,6 +1475,7 @@ void Game::updateMoveLR(sf::Time deltaTime)
 		if (sprite1.getPosition().x <= 15 + help || checkLeft())
 		{
 			if (!onUD && !onHorizontalLadder && !isLadderTexture) sprite1.setTexture(texture0);
+			sprite1.setScale(-1, 1);
 			sprite1.setPosition(float(left) + 15, sprite1.getGlobalBounds().top + 15);
 			return;
 		}
@@ -1394,58 +1563,55 @@ void Game::animateWorkout()
 
 void Game::loadTextures()
 {
-	if (!texture0.loadFromMemory(__0_png, __0_png_len) ||
-		!texture1.loadFromMemory(__1_png, __1_png_len) ||
-		!texture2.loadFromMemory(__2_png, __2_png_len) ||
-		!texture3.loadFromMemory(__3_png, __3_png_len) ||
-		!texture4.loadFromMemory(__4_png, __4_png_len) ||
-		!texture5.loadFromMemory(__5_png, __5_png_len) ||
-		!texture10.loadFromMemory(__10_png, __10_png_len) ||
-		!texture11.loadFromMemory(__11_png, __11_png_len) ||
-		!texture12.loadFromMemory(__12_png, __12_png_len) ||
-		!texture13.loadFromMemory(__13_png, __13_png_len) ||
-		!texture14.loadFromMemory(__14_png, __14_png_len) ||
-		!texture15.loadFromMemory(__15_png, __15_png_len) ||
-		!texture16.loadFromMemory(__16_png, __16_png_len) ||
-		!texture17.loadFromMemory(__17_png, __17_png_len) ||
-		!texture18.loadFromMemory(__18_png, __18_png_len) ||
-		!texture19.loadFromMemory(__19_png, __19_png_len) ||
-		!texture20.loadFromMemory(__20_png, __20_png_len) ||
-		!texture21.loadFromMemory(__21_png, __21_png_len) ||
-		!texture22.loadFromMemory(__22_png, __22_png_len) ||
-		!texture23.loadFromMemory(__23_png, __23_png_len) ||
-		!texture24.loadFromMemory(__24_png, __24_png_len) ||
-		!texture25.loadFromMemory(__25_png, __25_png_len) ||
-		!texture26.loadFromMemory(__26_png, __26_png_len) ||
-		!texture27.loadFromMemory(__27_png, __27_png_len) ||
-		!texture28.loadFromMemory(__28_png, __28_png_len) ||
-		!texture29.loadFromMemory(__29_png, __29_png_len) ||
-		!texture30.loadFromMemory(__30_png, __30_png_len) ||
-		!texture31.loadFromMemory(__31_png, __31_png_len) ||
-		!texture32.loadFromMemory(__32_png, __32_png_len) ||
-		!texture33.loadFromMemory(__33_png, __33_png_len) ||
-		!texture34.loadFromMemory(__34_png, __34_png_len) ||
-		!texture35.loadFromMemory(__35_png, __35_png_len) ||
-		!texture36.loadFromMemory(__36_png, __36_png_len) ||
-		!texture37.loadFromMemory(__37_png, __37_png_len) ||
-		!texture38.loadFromMemory(__38_png, __38_png_len) ||
-		!texture39.loadFromMemory(__39_png, __39_png_len) ||
-		!texture40.loadFromMemory(__40_png, __40_png_len) ||
-		!texture41.loadFromMemory(__41_png, __41_png_len) ||
-		!texture42.loadFromMemory(__42_png, __42_png_len) ||
-		!texture43.loadFromMemory(__43_png, __43_png_len) ||
-		!texture44.loadFromMemory(__44_png, __44_png_len) ||
-		!texture45.loadFromMemory(__45_png, __45_png_len) ||
-		!texture46.loadFromMemory(__46_png, __46_png_len) ||
-		!texture47.loadFromMemory(__47_png, __47_png_len) ||
-		!texture48.loadFromMemory(__48_png, __48_png_len) ||
-		!texture49.loadFromMemory(__49_png, __49_png_len) ||
-		!texture50.loadFromMemory(__50_png, __50_png_len) ||
-		!texture51.loadFromMemory(__51_png, __51_png_len) ||
-		!texture52.loadFromMemory(__52_png, __52_png_len))
-	{
-		throw std::exception("Не вдалося загрузити картинку :(");
-	}
+	texture0.loadFromMemory(__0_png, __0_png_len);
+	texture1.loadFromMemory(__1_png, __1_png_len);
+	texture2.loadFromMemory(__2_png, __2_png_len);
+	texture3.loadFromMemory(__3_png, __3_png_len);
+	texture4.loadFromMemory(__4_png, __4_png_len);
+	texture5.loadFromMemory(__5_png, __5_png_len);
+	texture10.loadFromMemory(__10_png, __10_png_len);
+	texture11.loadFromMemory(__11_png, __11_png_len);
+	texture12.loadFromMemory(__12_png, __12_png_len);
+	texture13.loadFromMemory(__13_png, __13_png_len);
+	texture14.loadFromMemory(__14_png, __14_png_len);
+	texture15.loadFromMemory(__15_png, __15_png_len);
+	texture16.loadFromMemory(__16_png, __16_png_len);
+	texture17.loadFromMemory(__17_png, __17_png_len);
+	texture18.loadFromMemory(__18_png, __18_png_len);
+	texture19.loadFromMemory(__19_png, __19_png_len);
+	texture20.loadFromMemory(__20_png, __20_png_len);
+	texture21.loadFromMemory(__21_png, __21_png_len);
+	texture22.loadFromMemory(__22_png, __22_png_len);
+	texture23.loadFromMemory(__23_png, __23_png_len);
+	texture24.loadFromMemory(__24_png, __24_png_len);
+	texture25.loadFromMemory(__25_png, __25_png_len);
+	texture26.loadFromMemory(__26_png, __26_png_len);
+	texture27.loadFromMemory(__27_png, __27_png_len);
+	texture28.loadFromMemory(__28_png, __28_png_len);
+	texture29.loadFromMemory(__29_png, __29_png_len);
+	texture30.loadFromMemory(__30_png, __30_png_len);
+	texture31.loadFromMemory(__31_png, __31_png_len);
+	texture32.loadFromMemory(__32_png, __32_png_len);
+	texture33.loadFromMemory(__33_png, __33_png_len);
+	texture34.loadFromMemory(__34_png, __34_png_len);
+	texture35.loadFromMemory(__35_png, __35_png_len);
+	texture36.loadFromMemory(__36_png, __36_png_len);
+	texture37.loadFromMemory(__37_png, __37_png_len);
+	texture38.loadFromMemory(__38_png, __38_png_len);
+	texture39.loadFromMemory(__39_png, __39_png_len);
+	texture40.loadFromMemory(__40_png, __40_png_len);
+	texture41.loadFromMemory(__41_png, __41_png_len);
+	texture42.loadFromMemory(__42_png, __42_png_len);
+	texture43.loadFromMemory(__43_png, __43_png_len);
+	texture44.loadFromMemory(__44_png, __44_png_len);
+	texture45.loadFromMemory(__45_png, __45_png_len);
+	texture46.loadFromMemory(__46_png, __46_png_len);
+	texture47.loadFromMemory(__47_png, __47_png_len);
+	texture48.loadFromMemory(__48_png, __48_png_len);
+	texture49.loadFromMemory(__49_png, __49_png_len);
+	texture50.loadFromMemory(__50_png, __50_png_len);
+	texture51.loadFromMemory(__51_png, __51_png_len);
+	texture52.loadFromMemory(__52_png, __52_png_len);
 }
 
 void Game::setEnemies()
@@ -1454,6 +1620,160 @@ void Game::setEnemies()
 	{
 		enemy.setTexture(texture13);
 		enemy.setColor(sf::Color::Magenta);
+	}
+}
+
+int Game::getLevel()
+{
+	getNumOfLevels();
+	std::ifstream ifile("levels/.save.txt");
+	if (!ifile.is_open()) showError(L"Error file loading: levels/.save.txt");
+	std::ifstream rules("levels/.rules.txt");
+	if (!rules.is_open()) showError(L"Error file loading: levels/.rules.txt");
+	rules.close();
+	char ch;
+	std::string num;
+	while (ifile.get(ch))
+	{
+		if (!std::isdigit(ch))
+		{
+			wchar_t wc = std::use_facet<std::ctype<wchar_t>>(std::locale()).widen(ch);
+			std::wstring wstr;
+			wstr += wc;
+			showError(L"Error file loading: levels/.save.txt\nUnexpected symbol - '" + wstr + L"'");
+		}
+		num += ch;
+	}
+	ifile.close();
+	return std::stoi(num);
+}
+
+void Game::setLevel(int level)
+{
+	getNumOfLevels();
+	std::ofstream ofile("levels/.save.txt", std::ios::trunc | std::ios::out);
+	if (!ofile.is_open()) showError(L"Error file loading: levels/.save.txt");
+	ofile << level;
+	ofile.close();
+}
+
+int Game::getNumOfLevels()
+{
+    int file_count = 0;
+    std::wstring search_path = L"levels\\*";
+    WIN32_FIND_DATA find_file_data;
+    HANDLE hFind = FindFirstFile(search_path.c_str(), &find_file_data);
+	do 
+	{
+		if (!(find_file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) file_count++;
+		else
+		{
+			std::wstring fname = find_file_data.cFileName;
+			if (fname != L"." && fname != L"..") showError(L"There should be no folders in 'levels',\nextra folder - '" + fname + L"'");
+		}
+	} while (FindNextFile(hFind, &find_file_data) != 0);
+    FindClose(hFind);
+
+	std::ifstream isfile("levels/.save.txt");
+	if (!isfile.is_open()) showError(L"Error file loading: levels/.save.txt");
+	isfile.close();
+	std::ifstream rules("levels/.rules.txt");
+	if (!rules.is_open()) showError(L"Error file loading: levels/.rules.txt");
+	rules.close();
+
+	file_count -= 2;
+	int levels = 0;
+	for (int i = 1; i <= file_count; i++)
+	{
+		std::wstring path = L"levels/level" + std::to_wstring(i) + L".txt";
+		std::ifstream ifile(path);
+		if (!ifile.is_open()) showError(L"Error file loading: " + path);
+		ifile.close();
+		levels++;
+	}
+	return levels;
+}
+
+void Game::updateLevel(bool isNextLevel)
+{
+	if (isNextLevel)
+	{
+		if (level == getNumOfLevels())
+			level = 1;
+		else
+			level++;
+	}
+	setSprites(level);
+	setSprite1();
+	setEnemies();
+	setText(level);
+	setLevel(level);
+	queueDeleted.clear();
+	queueTimer.clear();
+	isAnimatedDeletes.clear();
+	isPushedLS.clear();
+	miniAnimateDelete.clear();
+	animatedSprites.clear();
+	counterDeletedTextures.clear();
+	killedSprites.clear();
+	isVictory = false;
+	isFromFly = false;
+	space = false;
+	isVictory = false;
+	isWorkout = false;
+	ignoreUD = false;
+	moveLR = false;
+	movingRight = false;
+	movingLeft = false;
+	movingUp = false;
+	movingDown = false;
+}
+
+void Game::drawTransition()
+{
+	sf::Image img = texture20.copyToImage();
+	if (opacity <= 255 - transitionSpeed && isDrawnFade == false)
+	{
+		opacity += transitionSpeed;
+		for (int i = 0; i < 30; i++)
+		{
+			for (int j = 0; j < 30; j++)
+			{
+				img.setPixel(i, j, sf::Color(0, 0, 0, opacity));
+			}
+		}
+		textureFade.loadFromImage(img);
+		screenFade.setTexture(textureFade);
+		window.draw(screenFade);
+		if (opacity > 255 - transitionSpeed)
+		{
+			if (isRestart) updateLevel(false);
+			if (isWin) updateLevel(true);
+			isDrawnFade = true;
+			opacity = 255;
+		}
+	}
+	if (opacity >= transitionSpeed && isDrawnFade)
+	{
+		opacity -= transitionSpeed;
+		for (int i = 0; i < 30; i++)
+		{
+			for (int j = 0; j < 30; j++)
+			{
+				img.setPixel(i, j, sf::Color(0, 0, 0, opacity));
+			}
+		}
+		textureFade.loadFromImage(img);
+		screenFade.setTexture(textureFade);
+		window.draw(screenFade);
+		if (opacity < transitionSpeed)
+		{
+			opacity = transitionSpeed;
+			isDrawnFade = false;
+			isRestart = false;
+			isWin = false;
+			deltaTimeClock.restart();
+		}
 	}
 }
 

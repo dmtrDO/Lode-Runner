@@ -1,7 +1,7 @@
 
 Simple level editor
 
-23 x 32 blocks
+23 x 32 blocks !!!
 
 0 - void block
 1 - block that can be broken
@@ -12,11 +12,24 @@ Simple level editor
 6 - victory ladder
 7 - enemy
 8 - main character
-9 - foundation
+9 - foundation (only in the last row, this row should consist only of this symbol) !
 i - invisible block
+
+All other characters will be skipped, so if it's convenient for you, you can
+do the following: 0 0 0 1 0 3 3 3 ...
+				  
+				  0 0 0 1 0 3 3 3 ...
+				  ...................
+				  9 9 9 9 9 9 9 9 ...
+with spaces between symbols and rows and etc.
 
 Go through several levels (level1.txt, level2.txt...),
 this will help you understand the basic concept.
+
+DO NOT DELETE THE 'LEVELS' FOLDER. IT MUST CONTAIN '.rules.txt', '.save.txt'
+and levels: 'level{n}.txt', n - is a number of level, and nothing else.
+IMPORTANT: There must be a first level, and, for example, if there
+is a fifth level, there must be three more before it.
 
 You can also go to save.txt to change the level from which the
 game starts, there should be only one number and nothing else, 

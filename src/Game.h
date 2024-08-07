@@ -1,17 +1,18 @@
-
-#include "SFML/Graphics.hpp"
-#include <iostream>
-#include <vector>
-#include <cmath>
-#include <string>
 #include <fstream>
+#include <thread>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/RectangleShape.hpp"
+#include "SFML/Graphics/Text.hpp"
+#include <Windows.h>
 #include "font.h"
 #include "images.h"
 
 class Game
 {
 public:
-	Game(std::string path, int level, sf::Vector2i windowPosition, sf::Vector2u windowSize);
+	Game();
 
 	sf::RenderWindow window;
 
@@ -19,18 +20,8 @@ public:
 	void update();
 	void draw();
 
-	bool getOpen() const;
-	bool isIgnoreLevel() const;
-	sf::Vector2i getWinpos() const;
-
 private:
-	bool ignoreNextLevel;
-
-	bool open;
-
-	std::string pathToLevel;
-
-	void setWindow(sf::Vector2i windowsPosition, sf::Vector2u windowSize);
+	void setWindow();
 	///// 23 x 32 blocks
    ///// 1 block = 30 x 30 pixels
 
@@ -98,7 +89,7 @@ private:
 	sf::Vector2f mainPosition;
 	void setSprite1();
 
-	void setSprites();
+	void setSprites(int level);
 
 	void initVariables();
 
@@ -137,6 +128,7 @@ private:
 
 	bool updateFly();
 	bool isFromFly;
+	void updateFlyTexture();
 
 	std::vector<sf::Texture> texturesForWorkout;
 
@@ -154,11 +146,13 @@ private:
 
 	std::vector<sf::Sprite> victoryUD;
 	std::vector<sf::Sprite> goldSprites;
-
-	void updateGold();
 	bool isVictory;
 
+	void updateGold();
+
 	bool space;
+	sf::Clock spaceTime;
+	bool checkSpace(sf::Sprite& sprite);
 	void updateSpace(sf::Time deltaTime);
 	std::vector<sf::Sprite> spaceBlocks;
 	void removeBlock(sf::Sprite& spaced);
@@ -184,15 +178,31 @@ private:
 	void setEnemies();
 
 	void updateDeath();
-	bool end;
-	void restart();
-
-	sf::Vector2i winpos;
 
 	bool updateHelp(sf::Time& deltaTime);
 	float help;
 
 	int framesLimit;
+
+	int level;
+	int getLevel();
+	void setLevel(int level);
+	int getNumOfLevels();
+	bool isRestart;
+	bool isWin;
+	void updateLevel(bool isNextLevel);
+
+	float fps;
+	sf::Clock framesClock;
+	void updateFPS();
+	void showError(std::wstring finalMessage);
+	void drawLevel();
+	void drawTransition();
+	sf::Sprite screenFade;
+	sf::Texture textureFade;
+	bool isDrawnFade;
+	unsigned char opacity;
+	unsigned char transitionSpeed;
 };
 
 
