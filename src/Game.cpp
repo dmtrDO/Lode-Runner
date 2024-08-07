@@ -35,7 +35,8 @@ void Game::handle()
 
 void Game::update()
 {	
-	//std::cout << sprite1.getGlobalBounds().left << "\t" << sprite1.getGlobalBounds().top << "\n";
+	std::cout << sprite1.getGlobalBounds().left << "\t" << sprite1.getGlobalBounds().top << "\n";
+	//window.setFramerateLimit(45);
 
 	if (window.hasFocus()) updateFPS();
 	if (!window.hasFocus())
@@ -46,6 +47,7 @@ void Game::update()
 		movingRight = false;
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		deltaTimeClock.restart();
+		fps = 45;
 	}
 
 	updateDeath();
@@ -63,7 +65,7 @@ void Game::update()
 		isFromFly = true;
 		return;
 	}
-	//if (updateHelp(deltaTime)) return;
+	if (updateHelp(deltaTime)) return;
 	updateMoveLR(deltaTime);
 	updateMoveUD(deltaTime);
 	updateSpace(deltaTime);
@@ -124,97 +126,62 @@ void Game::updateFPS()
 	fps++;
 	if (framesClock.getElapsedTime().asSeconds() >= 1.0f)
 	{
-		std::cout << fps << "\n";
+		fpsVector.push_back(fps);
+		if (fpsVector.size() >= 5)
+		{
+			float sum = 0;
+			for (size_t i = 0; i < fpsVector.size(); i++)
+			{
+				sum += fpsVector.at(i);
+			}
+			averageFPS = sum / fpsVector.size();
+			fpsVector.clear();
+		}
 		if (fps >= 55)
 		{
 			help = 3.0f;
+			transitionSpeed = 15;
 			reawakenedInterval = 25.0f;
-			miniAnimateInterval = 5.0f;
-			animationMoveIntervalLR = 30.0f;
-			animationMoveIntervalUD = 20.0f;
-			animationMoveIntervalWorkout = 25.0f;
+			miniAnimateInterval = 15.0f;
+			animationMoveIntervalLR = 32.0f;
+			animationMoveIntervalUD = 24.0f;
+			animationMoveIntervalWorkout = 40.0f;
 		}
 		else if (fps >= 40 && fps < 55)
 		{
 			help = 4.0f;
-			reawakenedInterval = 22.5f;
-			miniAnimateInterval = 4.5f;
-			animationMoveIntervalLR = 27.5f;
-			animationMoveIntervalUD = 18.0f;
-			animationMoveIntervalWorkout = 23.0f;
+			transitionSpeed = 20;
+			reawakenedInterval = 22.0f;
+			miniAnimateInterval = 10.0f;
+			animationMoveIntervalLR = 29.0f;
+			animationMoveIntervalUD = 21.0f;
+			animationMoveIntervalWorkout = 38.0f;
 		}
 		else if (fps >= 30 && fps < 40)
 		{
 			help = 5.0f;
-			reawakenedInterval = 20.0f;
-			miniAnimateInterval = 4.0f;
-			animationMoveIntervalLR = 25.0f;
-			animationMoveIntervalUD = 16.5f;
-			animationMoveIntervalWorkout = 21.0f;
+			transitionSpeed = 25;
+			reawakenedInterval = 21.0f;
+			miniAnimateInterval = 8.0f;
+			animationMoveIntervalLR = 27.0f;
+			animationMoveIntervalUD = 16.0f;
+			animationMoveIntervalWorkout = 33.0f;
 		}
 		else if (fps >= 20 && fps < 30)
 		{
 			help = 6.0f;
-			reawakenedInterval = 18.5f;
-			miniAnimateInterval = 3.5f;
-			animationMoveIntervalLR = 23.0f;
-			animationMoveIntervalUD = 15.0f;
-			animationMoveIntervalWorkout = 19.5f;
-		}
-		else if (fps >= 10 && fps < 20)
-		{
-			help = 10.0f;
+			transitionSpeed = 30;
 			reawakenedInterval = 18.0f;
-			miniAnimateInterval = 3.0f;
-			animationMoveIntervalLR = 21.0f;
-			animationMoveIntervalUD = 13.5f;
-			animationMoveIntervalWorkout = 18.0f;
+			miniAnimateInterval = 1.0f;
+			animationMoveIntervalLR = 32.0f;
+			animationMoveIntervalUD = 10.0f;
+			animationMoveIntervalWorkout = 36.0f;
 		}
-		else
+		else if (averageFPS > 0 && averageFPS < 20)
 			showError(L"Too few frames per second for playing");
 		fps = 0;
 		framesClock.restart();
 	}
-}
-
-void Game::showError(std::wstring finalMessage)
-{
-	window.close();
-	sf::RenderWindow errWindow(sf::VideoMode::getFullscreenModes().back(), "Error");
-	errWindow.setPosition(sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - errWindow.getSize().x) / 2), 0));
-
-	int num = 30;
-	sf::Clock terminateClock;
-	sf::Clock secondsClock;
-	std::wstring message(finalMessage + L"\nThis program will auto close in " + std::to_wstring(num));
-
-	while (errWindow.isOpen() && terminateClock.getElapsedTime().asSeconds() <= 31.0f)
-	{
-		sf::Event event;
-		while (errWindow.pollEvent(event))
-		{
-			if (event.type == sf::Event::Closed)
-			{
-				errWindow.close();
-				window.close();
-			}
-		}
-		if (secondsClock.getElapsedTime().asSeconds() >= 1.0f)
-		{
-			secondsClock.restart();
-			num--;
-			message = finalMessage + L"\nThis program will auto close in " + std::to_wstring(num);
-		}
-
-		sf::Text finalText(message, font);
-		finalText.setFillColor(sf::Color::Magenta);
-		finalText.setPosition((errWindow.getSize().x - finalText.getGlobalBounds().width) / 2, 
-							  (errWindow.getSize().y - finalText.getGlobalBounds().height) / 2);
-		errWindow.clear(sf::Color::Black);
-		errWindow.draw(finalText);
-		errWindow.display();
-	}
-	std::exit(1);
 }
 
 bool Game::updateHelp(sf::Time& deltaTime)
@@ -608,7 +575,7 @@ void Game::setSprites(int level)
 
 	std::wstring path = L"levels/level" + std::to_wstring(level) + L".txt";
 	std::ifstream file(path);
-	if (!file.is_open()) showError(L"Error file loading: " + path);
+	if (!file.is_open()) showError(L"Error file loading: " + path + L"\nCheck levels/.rules.txt");
 
 	std::vector<sf::Vector2f> vectorOfPositions;
 	for (int i = 0; i < 23; i++)
@@ -690,7 +657,7 @@ void Game::setSprites(int level)
 			break;
 		}
 
-		if (counter == vectorOfPositions.size()) showError(L"Error in " + path + L"\nThe field must be 23 x 32");
+		if (counter == vectorOfPositions.size()) showError(L"Error in " + path + L"\nThe field must be 23 x 32\nCheck levels/.rules.txt");
 
 		if (victoryUDBool)
 			sprite.setPosition(vectorOfPositions[counter].x, vectorOfPositions[counter].y - 2000);
@@ -708,9 +675,9 @@ void Game::setSprites(int level)
 		
 		counter++;
 	}
-	if (counter != 23 * 32) showError(L"Error in " + path + L"\nThe field must be 23 x 32");
-	if (isCorrect1 == false) showError(L"Error in " + path + L"\nSymbols '9' should be only at the very bottom");
-	if (isCorrect2 == false) showError(L"Error in " + path + L"\nThe last row should consist only of '9'");
+	if (counter != 23 * 32) showError(L"Error in " + path + L"\nThe field must be 23 x 32\nCheck levels/.rules.txt");
+	if (isCorrect1 == false) showError(L"Error in " + path + L"\nSymbols '9' should be only at the very bottom\nCheck levels/.rules.txt");
+	if (isCorrect2 == false) showError(L"Error in " + path + L"\nThe last row should consist only of '9'\nCheck levels/.rules.txt");
 }
 
 void Game::setText(int level)
@@ -1209,6 +1176,7 @@ void Game::animateUD()
 
 void Game::initVariables()
 {
+	averageFPS = 0;
 	screenFade.setTexture(texture20);
 	screenFade.setScale(32.0f, 22.0f);
 	transitionSpeed = 15;
@@ -1235,10 +1203,10 @@ void Game::initVariables()
 	frameIndexWorkout = 0;
 	deletedBlockInterval = 7.0f;
 	reawakenedInterval = 25.0f;
-	miniAnimateInterval = 5.0f;
-	animationMoveIntervalLR = 30.0f;
+	miniAnimateInterval = 15.0f;
+	animationMoveIntervalLR = 32.0f;
 	animationMoveIntervalUD = 20.0f;
-	animationMoveIntervalWorkout = 25.0f;
+	animationMoveIntervalWorkout = 40.0f;
 	deletedTextures = { texture33, texture34, texture35, texture36, texture37, texture38, texture39, texture20 };
 	reawakenedTextures = { texture40, texture41, texture42, texture43, texture44, texture45, texture46, texture47, texture48, texture49, texture50, texture51, texture15 };
 	texturesToMoveLR = { texture1, texture2, texture3, texture4, texture5, texture4, texture3, texture2, texture1, texture10, texture11, texture12 };
@@ -1627,7 +1595,6 @@ int Game::getLevel()
 {
 	getNumOfLevels();
 	std::ifstream ifile("levels/.save.txt");
-	if (!ifile.is_open()) showError(L"Error file loading: levels/.save.txt");
 	char ch;
 	std::string num;
 	while (ifile.get(ch))
@@ -1637,7 +1604,7 @@ int Game::getLevel()
 			wchar_t wc = std::use_facet<std::ctype<wchar_t>>(std::locale()).widen(ch);
 			std::wstring wstr;
 			wstr += wc;
-			showError(L"Error file loading: levels/.save.txt\nUnexpected symbol - '" + wstr + L"'");
+			showError(L"Error file loading: levels/.save.txt\nUnexpected symbol - '" + wstr + L"'\nCheck levels/.rules.txt");
 		}
 		num += ch;
 	}
@@ -1649,21 +1616,29 @@ void Game::setLevel(int level)
 {
 	getNumOfLevels();
 	std::ofstream ofile("levels/.save.txt", std::ios::trunc | std::ios::out);
-	if (!ofile.is_open()) showError(L"Error file loading: levels/.save.txt");
 	ofile << level;
 	ofile.close();
 }
 
 int Game::getNumOfLevels()
 {
+	if (!fs::directory_entry("levels").exists()) 
+		showErrorWithLink(L"There must be folder 'levels'\nin the same directory as an executable file\nCheck rules on:\n", 3.0f);
+	std::ifstream rules("levels/.rules.txt");
+	if (!rules.is_open()) showErrorWithLink(L"Error file loading: levels/.rules.txt\nCheck rules on:\n", 2.0f);
+	rules.close();
+	std::ifstream isfile("levels/.save.txt");
+	if (!isfile.is_open()) showError(L"Error file loading: levels/.save.txt\nCheck levels/.rules.txt");
+	isfile.close();
+
     int files = 0;
-	if (!fs::directory_entry("levels").exists()) showError(L"There must be folder 'levels'\nin the same directory as an executable file");
 	for (const auto& entry : fs::directory_iterator("levels"))
 	{
 		std::string directoryName = entry.path().filename().string();
+		std::wstring wpath = entry.path().filename().wstring();
 		if (directoryName == ".save.txt" || directoryName == ".rules.txt") continue;
 		if (directoryName.size() < 10 || directoryName.size() > 12 || entry.is_directory()) 
-			showError(L"There are an extra directory - 'levels/" + entry.path().filename().wstring() + L"'");
+			showError(L"There are an extra directory - 'levels/" + wpath + L"'\nCheck levels/.rules.txt");
 		std::string start = directoryName.substr(0, 5);
 		std::string end = directoryName.substr(directoryName.size() - 4, 4);
 		int point = 1;
@@ -1673,28 +1648,21 @@ int Game::getNumOfLevels()
 			else break;
 		}
 		std::string center = directoryName.substr(5, point);
-		if (center.at(0) == '0') showError(L"There are an extra directory - 'levels/" + entry.path().filename().wstring() + L"'");
+		if (center.at(0) == '0') showError(L"There are an extra directory - 'levels/" + wpath + L"'\nCheck levels/.rules.txt");
 		bool isNum = true;
 		for (size_t i = 0; i < center.size(); i++)
 		{
-			if (!isdigit(center.at(i))) showError(L"There are an extra directory - 'levels/" + entry.path().filename().wstring() + L"'");
+			if (!isdigit(center.at(i))) showError(L"There are an extra directory - 'levels/" + wpath + L"'\nCheck levels/.rules.txt");
 		}
-		if (start != "level" || end != ".txt") showError(L"There are an extra directory - 'levels/" + entry.path().filename().wstring() + L"'");
+		if (start != "level" || end != ".txt") showError(L"There are an extra directory - 'levels/" + wpath + L"'\nCheck levels/.rules.txt");
 		files++;
 	}
-	std::ifstream isfile("levels/.save.txt");
-	if (!isfile.is_open()) showError(L"Error file loading: levels/.save.txt");
-	isfile.close();
-	std::ifstream rules("levels/.rules.txt");
-	if (!rules.is_open()) showError(L"Error file loading: levels/.rules.txt");
-	rules.close();
-
 	int levels = 0;
 	for (int i = 1; i <= files; i++)
 	{
 		std::wstring path = L"levels/level" + std::to_wstring(i) + L".txt";
 		std::ifstream ifile(path);
-		if (!ifile.is_open()) showError(L"Error file loading: " + path);
+		if (!ifile.is_open()) showError(L"Error file loading: " + path + L"\nCheck levels/.rules.txt");
 		ifile.close();
 		levels++;
 	}
@@ -1782,6 +1750,111 @@ void Game::drawTransition()
 			deltaTimeClock.restart();
 		}
 	}
+}
+
+void Game::showError(std::wstring finalMessage)
+{
+	window.close();
+	sf::RenderWindow errWindow(sf::VideoMode::getFullscreenModes().back(), "Error");
+	errWindow.setPosition(sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - errWindow.getSize().x) / 2), 0));
+	while (errWindow.isOpen())
+	{
+		sf::Event event;
+		while (errWindow.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+			{
+				errWindow.close();
+				window.close();
+			}
+		}
+		sf::Text finalText(finalMessage, font, 24);
+		finalText.setFillColor(sf::Color::Magenta);
+		finalText.setPosition((errWindow.getSize().x - finalText.getGlobalBounds().width) / 2,
+								(errWindow.getSize().y - finalText.getGlobalBounds().height) / 2);
+		errWindow.clear(sf::Color::Black);
+		errWindow.draw(finalText);
+		errWindow.display();
+	}
+	std::exit(1);
+}
+
+void Game::showErrorWithLink(std::wstring finalMessage, float step)
+{
+	window.close();
+	sf::RenderWindow errWindow(sf::VideoMode::getFullscreenModes().back(), "Error", sf::Style::Close | sf::Style::Titlebar);
+	errWindow.setPosition(sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - errWindow.getSize().x) / 2), 0));
+	std::string linkString = "https://github.com/dmtrDO/Lode-Runner";
+	sf::Text linkage(linkString, font);
+	sf::Text finalText;
+	bool isClicked = false;
+	sf::Vector2f mousePosition;
+	bool onText = false;
+	sf::Cursor cursor;
+	finalText.setFont(font);
+
+	while (errWindow.isOpen())
+	{
+		isClicked = false;
+		sf::Event event;
+		while (errWindow.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+			{
+				errWindow.close();
+				window.close();
+			}
+			if (event.type == sf::Event::MouseButtonPressed)
+			{
+				isClicked = true;
+			}
+			if (event.type == sf::Event::MouseMoved)
+			{
+				mousePosition = static_cast<sf::Vector2f>(sf::Mouse::getPosition(errWindow));
+			}
+		}
+		finalText.setString(finalMessage);
+		finalText.setCharacterSize(24);
+		finalText.setFillColor(sf::Color::Magenta);
+		finalText.setPosition((errWindow.getSize().x - linkage.getGlobalBounds().width) / 2, (errWindow.getSize().y - finalText.getGlobalBounds().height) / 2);
+		linkage.setPosition((errWindow.getSize().x - linkage.getGlobalBounds().width) / 2 + 2,
+							(errWindow.getSize().y - finalText.getGlobalBounds().height) / 2 + step * linkage.getGlobalBounds().height - 3.5);
+		linkage.setFillColor(sf::Color::Magenta);
+		linkage.setCharacterSize(24);
+		linkage.setStyle(sf::Text::Style::Regular);
+		if (linkage.getGlobalBounds().contains(mousePosition))
+		{
+			cursor.loadFromSystem(sf::Cursor::Hand);
+			errWindow.setMouseCursor(cursor);
+			linkage.setFillColor(sf::Color::Red);
+			linkage.setStyle(sf::Text::Style::Underlined);
+			if (isClicked) 
+			{
+				openLink("https://github.com/dmtrDO/Lode-Runner");
+				errWindow.close();
+			}
+		}
+		else
+		{
+			cursor.loadFromSystem(sf::Cursor::Arrow);
+			errWindow.setMouseCursor(cursor);
+		}
+		errWindow.clear(sf::Color::Black);
+		errWindow.draw(finalText);
+		errWindow.draw(linkage);
+		errWindow.display();
+	}
+	std::exit(1);
+}
+
+void Game::openLink(const std::string& url) {
+#if defined(_WIN32) || defined(_WIN64)
+	system(("start " + url).c_str());
+#elif defined(__APPLE__) || defined(__MACH__)
+	system(("open " + url).c_str());
+#elif defined(__linux__)
+	system(("xdg-open " + url).c_str());
+#endif
 }
 
 

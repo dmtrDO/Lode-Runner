@@ -187,6 +187,8 @@ private:
 	float help;
 
 	int framesLimit;
+	std::vector<int> fpsVector;
+	float averageFPS;
 
 	int level;
 	int getLevel();
@@ -200,10 +202,12 @@ private:
 	sf::Clock framesClock;
 	void updateFPS();
 	void showError(std::wstring finalMessage);
+	void showErrorWithLink(std::wstring finalMessage, float step);
 	void drawLevel();
 	void drawTransition();
 	sf::Sprite screenFade;
 	sf::Texture textureFade;
+	void openLink(const std::string& url);
 	bool isDrawnFade;
 	unsigned char opacity;
 	unsigned char transitionSpeed;
