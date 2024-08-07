@@ -1659,8 +1659,8 @@ void Game::setLevel(int level)
 
 int Game::getNumOfLevels()
 {
-    int file_count = 0;
-    std::wstring search_path = L"levels\\*";
+    int files = 0;
+    /*std::wstring search_path = L"levels\\*";
     WIN32_FIND_DATA find_file_data;
     HANDLE hFind = FindFirstFile(search_path.c_str(), &find_file_data);
 	do 
@@ -1672,7 +1672,10 @@ int Game::getNumOfLevels()
 			if (fname != L"." && fname != L"..") showError(L"There should be no folders in 'levels',\nextra folder - '" + fname + L"'");
 		}
 	} while (FindNextFile(hFind, &find_file_data) != 0);
-    FindClose(hFind);
+    FindClose(hFind);*/
+
+
+	std::cout << files;
 
 	std::ifstream isfile("levels/.save.txt");
 	if (!isfile.is_open()) showError(L"Error file loading: levels/.save.txt");
@@ -1681,9 +1684,9 @@ int Game::getNumOfLevels()
 	if (!rules.is_open()) showError(L"Error file loading: levels/.rules.txt");
 	rules.close();
 
-	file_count -= 2;
+	files -= 2;
 	int levels = 0;
-	for (int i = 1; i <= file_count; i++)
+	for (int i = 1; i <= files; i++)
 	{
 		std::wstring path = L"levels/level" + std::to_wstring(i) + L".txt";
 		std::ifstream ifile(path);

@@ -1,5 +1,7 @@
+#include <iostream>
 #include <fstream>
 #include <thread>
+#include <filesystem>
 #include "SFML/Window/Event.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
@@ -8,7 +10,6 @@
 #include <Windows.h>
 #include "font.h"
 #include "images.h"
-
 class Game
 {
 public:
