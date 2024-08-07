@@ -90,8 +90,8 @@ Game::Game()
 	initVariables();
 	setWindow();
 	setIcon();
-	setText(getLevel());
-	setSprites(getLevel());
+	setText(level);
+	setSprites(level);
 	setSprite1();
 	setEnemies();
 	smoothTextures();
@@ -124,7 +124,7 @@ void Game::updateFPS()
 	fps++;
 	if (framesClock.getElapsedTime().asSeconds() >= 1.0f)
 	{
-		//std::cout << fps << "\n";
+		std::cout << fps << "\n";
 		if (fps >= 55)
 		{
 			help = 3.0f;
@@ -725,7 +725,6 @@ void Game::setText(int level)
 
 void Game::smoothTextures()
 {
-	texture0.setSmooth(true);
 	for (sf::Texture& texture : texturesToMoveLR)
 	{
 		texture.setSmooth(true);
@@ -742,10 +741,11 @@ void Game::smoothTextures()
 	{
 		texture.setSmooth(true);
 	}
-	for (sf::Texture& texture :reawakenedTextures)
+	for (sf::Texture& texture : reawakenedTextures)
 	{
 		texture.setSmooth(true);
 	}
+	texture0.setSmooth(true);
 	texture13.setSmooth(true);
 	texture14.setSmooth(true);
 	texture15.setSmooth(true);
@@ -1628,9 +1628,6 @@ int Game::getLevel()
 	getNumOfLevels();
 	std::ifstream ifile("levels/.save.txt");
 	if (!ifile.is_open()) showError(L"Error file loading: levels/.save.txt");
-	std::ifstream rules("levels/.rules.txt");
-	if (!rules.is_open()) showError(L"Error file loading: levels/.rules.txt");
-	rules.close();
 	char ch;
 	std::string num;
 	while (ifile.get(ch))
@@ -1660,23 +1657,31 @@ void Game::setLevel(int level)
 int Game::getNumOfLevels()
 {
     int files = 0;
-    /*std::wstring search_path = L"levels\\*";
-    WIN32_FIND_DATA find_file_data;
-    HANDLE hFind = FindFirstFile(search_path.c_str(), &find_file_data);
-	do 
+	if (!fs::directory_entry("levels").exists()) showError(L"There must be folder 'levels'\nin the same directory as an executable file");
+	for (const auto& entry : fs::directory_iterator("levels"))
 	{
-		if (!(find_file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) file_count++;
-		else
+		std::string directoryName = entry.path().filename().string();
+		if (directoryName == ".save.txt" || directoryName == ".rules.txt") continue;
+		if (directoryName.size() < 10 || directoryName.size() > 12 || entry.is_directory()) 
+			showError(L"There are an extra directory - 'levels/" + entry.path().filename().wstring() + L"'");
+		std::string start = directoryName.substr(0, 5);
+		std::string end = directoryName.substr(directoryName.size() - 4, 4);
+		int point = 1;
+		for (size_t i = 6; i < directoryName.size() - 4; i++)
 		{
-			std::wstring fname = find_file_data.cFileName;
-			if (fname != L"." && fname != L"..") showError(L"There should be no folders in 'levels',\nextra folder - '" + fname + L"'");
+			if (directoryName.at(i) != '.') point++;
+			else break;
 		}
-	} while (FindNextFile(hFind, &find_file_data) != 0);
-    FindClose(hFind);*/
-
-
-	std::cout << files;
-
+		std::string center = directoryName.substr(5, point);
+		if (center.at(0) == '0') showError(L"There are an extra directory - 'levels/" + entry.path().filename().wstring() + L"'");
+		bool isNum = true;
+		for (size_t i = 0; i < center.size(); i++)
+		{
+			if (!isdigit(center.at(i))) showError(L"There are an extra directory - 'levels/" + entry.path().filename().wstring() + L"'");
+		}
+		if (start != "level" || end != ".txt") showError(L"There are an extra directory - 'levels/" + entry.path().filename().wstring() + L"'");
+		files++;
+	}
 	std::ifstream isfile("levels/.save.txt");
 	if (!isfile.is_open()) showError(L"Error file loading: levels/.save.txt");
 	isfile.close();
@@ -1684,7 +1689,6 @@ int Game::getNumOfLevels()
 	if (!rules.is_open()) showError(L"Error file loading: levels/.rules.txt");
 	rules.close();
 
-	files -= 2;
 	int levels = 0;
 	for (int i = 1; i <= files; i++)
 	{

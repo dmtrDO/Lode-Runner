@@ -1,15 +1,18 @@
+
 #include <iostream>
-#include <fstream>
 #include <thread>
+#include <fstream>
 #include <filesystem>
 #include "SFML/Window/Event.hpp"
+#include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include <Windows.h>
 #include "font.h"
 #include "images.h"
+
+namespace fs = std::filesystem;
+
 class Game
 {
 public:
@@ -204,6 +207,8 @@ private:
 	bool isDrawnFade;
 	unsigned char opacity;
 	unsigned char transitionSpeed;
+
+
 };
 
 
