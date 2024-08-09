@@ -36,7 +36,7 @@ void Game::handle()
 void Game::update()
 {	
 	//std::cout << sprite1.getGlobalBounds().left << "\t" << sprite1.getGlobalBounds().top << "\n";
-	window.setFramerateLimit(70);
+	//window.setFramerateLimit(70);
 
 	if (window.hasFocus()) updateFPS();
 	if (!window.hasFocus())
@@ -1190,7 +1190,7 @@ void Game::initVariables()
 	isRestart = false;
 	opacity = 25;
 	level = getLevel();
-	framesLimit = 70;
+	framesLimit = 200;
 	help = 3.0f;
 	isFromFly = false;
 	space = false;
