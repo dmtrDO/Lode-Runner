@@ -1,11 +1,9 @@
 
 #include "Game.h" 
 
-int main()
-{
+int main() {
     Game game;
-    while (game.window.isOpen())
-    {
+    while (game.window.isOpen()) {
         game.handle();
         game.update();
         game.draw();

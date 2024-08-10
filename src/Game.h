@@ -1,20 +1,19 @@
 
-#include <iostream>
-#include <thread>
-#include <fstream>
-#include <filesystem>
-#include "SFML/Window/Event.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/RectangleShape.hpp"
 #include "font.h"
 #include "images.h"
+#include "SFML/Graphics/RectangleShape.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Text.hpp"
+#include "SFML/Window/Event.hpp"
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <thread>
 
 namespace fs = std::filesystem;
 
-class Game
-{
+class Game {
 public:
 	Game();
 
@@ -186,9 +185,6 @@ private:
 	bool updateHelp(sf::Time& deltaTime);
 	float help;
 
-	std::vector<int> fpsVector;
-	float averageFPS;
-
 	int level;
 	int getLevel();
 	void setLevel(int level);
@@ -210,8 +206,6 @@ private:
 	bool isDrawnFade;
 	unsigned char opacity;
 	unsigned char transitionSpeed;
-
-
 };
 
 
