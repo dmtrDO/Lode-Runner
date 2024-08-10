@@ -35,9 +35,6 @@ void Game::handle()
 
 void Game::update()
 {	
-	//std::cout << sprite1.getGlobalBounds().left << "\t" << sprite1.getGlobalBounds().top << "\n";
-	//window.setFramerateLimit(70);
-
 	if (window.hasFocus()) updateFPS();
 	if (!window.hasFocus())
 	{
@@ -65,7 +62,7 @@ void Game::update()
 		isFromFly = true;
 		return;
 	}
-	//if (updateHelp(deltaTime)) return;
+	if (updateHelp(deltaTime)) return;
 	updateMoveLR(deltaTime);
 	updateMoveUD(deltaTime);
 	updateSpace(deltaTime);
@@ -126,7 +123,6 @@ void Game::updateFPS()
 	fps++;
 	if (framesClock.getElapsedTime().asSeconds() >= 1.0f)
 	{
-		std::cout << fps << "\n";
 		fpsVector.push_back(fps);
 		if (fpsVector.size() >= 5)
 		{
@@ -140,7 +136,7 @@ void Game::updateFPS()
 		}
 		if (fps >= 60)
 		{
-			help = 3.0f;
+			help = 5.0f;
 			transitionSpeed = 15;
 			reawakenedInterval = 25.0f;
 			miniAnimateInterval = 15.0f;
@@ -150,7 +146,7 @@ void Game::updateFPS()
 		}
 		else if (fps >= 40 && fps < 55)
 		{
-			help = 4.0f;
+			help = 6.0f;
 			transitionSpeed = 20;
 			reawakenedInterval = 22.0f;
 			miniAnimateInterval = 10.0f;
@@ -160,7 +156,7 @@ void Game::updateFPS()
 		}
 		else if (fps >= 30 && fps < 40)
 		{
-			help = 5.0f;
+			help = 7.0f;
 			transitionSpeed = 25;
 			reawakenedInterval = 21.0f;
 			miniAnimateInterval = 8.0f;
@@ -170,7 +166,7 @@ void Game::updateFPS()
 		}
 		else if (fps >= 20 && fps < 30)
 		{
-			help = 6.0f;
+			help = 8.0f;
 			transitionSpeed = 30;
 			reawakenedInterval = 18.0f;
 			miniAnimateInterval = 1.0f;
@@ -191,7 +187,6 @@ bool Game::updateHelp(sf::Time& deltaTime)
 
 	bool isHelp = false;
 	float hlp = help / 2;
-	//if (fps >= 30 && fps < 40) hlp += 2.0f;
 
 	sf::RectangleShape rectdown(sf::Vector2f(30.0f, help));
 	rectdown.setPosition(sprite1.getGlobalBounds().left, sprite1.getGlobalBounds().top + 30 - help);
@@ -876,7 +871,7 @@ bool Game::updateFly()
 
 			if (movingDown)
 			{ 
-				if (movingUp) return false;
+				if (movingUp) return false;	
 				for (sf::Sprite& spr : blocks)
 				{
 					if (rect.getGlobalBounds().intersects(spr.getGlobalBounds())) return false;
@@ -1153,7 +1148,7 @@ void Game::updateMoveUD(sf::Time deltaTime)
 
 	sprite1.move(0, deltaTime.asSeconds() * mainSpeed);
 	animateUD();
-}
+}   
 
 void Game::centrelizing(const sf::Sprite sprite)
 {
@@ -1190,8 +1185,7 @@ void Game::initVariables()
 	isRestart = false;
 	opacity = 25;
 	level = getLevel();
-	framesLimit = 200;
-	help = 3.0f;
+	help = 4.0f;
 	isFromFly = false;
 	space = false;
 	isVictory = false;
@@ -1202,7 +1196,7 @@ void Game::initVariables()
 	movingLeft = false;
 	movingUp = false;
 	movingDown = false;
-	mainSpeed = 130.0f;
+	mainSpeed = 150.0f;
 	frameIndexLR = 0;
 	frameIndexUD = 0;
 	frameIndexWorkout = 0;
@@ -1291,7 +1285,6 @@ void Game::setWindow()
 	window.create(sf::VideoMode(32 * 30, 23 * 30 + 20), "Lode Runner");
 	window.setPosition(sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - width) / 2), 0));
 	window.setSize(sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr));
-	window.setFramerateLimit(framesLimit);
 }
 
 void Game::setIcon()

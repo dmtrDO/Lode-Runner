@@ -186,7 +186,6 @@ private:
 	bool updateHelp(sf::Time& deltaTime);
 	float help;
 
-	int framesLimit;
 	std::vector<int> fpsVector;
 	float averageFPS;
 
