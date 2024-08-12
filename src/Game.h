@@ -120,6 +120,7 @@ private:
 
 	bool moveLR;
 	bool ignoreUD;
+	bool onUD;
 
 	std::vector<sf::Sprite> spritesUD;
 	std::vector<sf::Sprite> blocks;
@@ -131,7 +132,6 @@ private:
 
 	bool updateFly();
 	bool isFromFly;
-	void updateFlyTexture();
 
 	std::vector<sf::Texture> texturesForWorkout;
 
