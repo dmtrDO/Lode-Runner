@@ -1,14 +1,21 @@
 
+#ifndef GAME
+#define GAME
+
 #include "font.h"
 #include "images.h"
+#include "Enemy.h"
+
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Window/Event.hpp"
+
 #include <filesystem>
-#include <fstream>
 #include <iostream>
+#include <fstream>
+#include <random>
 #include <thread>
 
 namespace fs = std::filesystem;
@@ -176,10 +183,6 @@ private:
 	float deletedBlockInterval;
 	float reawakenedInterval;
 	std::vector<sf::Sprite> killedSprites;
-
-	std::vector<sf::Sprite> enemies;
-	void setEnemies();
-
 	void updateDeath();
 
 	bool updateHelp(sf::Time& deltaTime);
@@ -192,6 +195,9 @@ private:
 	bool isRestart;
 	bool isWin;
 	void updateLevel(bool isNextLevel);
+
+	sf::Clock flicker;
+	float flickTime;
 
 	float fps;
 	sf::Clock framesClock;
@@ -206,6 +212,18 @@ private:
 	bool isDrawnFade;
 	unsigned char opacity;
 	unsigned char transitionSpeed;
+
+	bool isStart;
+	std::vector<Enemy> enemies;
+	void setEnemies();
+	void setEnemyMove(Enemy& enemy);
+	void updateEnemies(sf::Time& deltaTime);
+	std::vector<int> randEnemySpawnNums;
+	std::vector<int> randLadderEnemySpawn;
+	void updateEnemyDeath(Enemy& enemy);
+	std::vector<sf::Sprite> holes;
+
 };
 
+#endif
 
