@@ -39,8 +39,8 @@ public:
 	static std::vector <sf::Sprite> forFly;
 	static std::vector <sf::Sprite> spritesWorkout;
 	static std::vector <sf::Sprite> spritesUD;
-	static std::vector<sf::Sprite> blocks;
-	static std::vector<sf::Sprite> holes;
+	static std::vector <sf::Sprite> blocks;
+	static std::vector <sf::Sprite> holes;
 
 private:
 

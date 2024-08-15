@@ -163,7 +163,7 @@ private:
 	bool space;
 	sf::Clock spaceTime;
 	bool checkSpace(sf::Sprite& sprite);
-	void updateSpace(sf::Time deltaTime);
+	void updateSpace();
 	std::vector<sf::Sprite> spaceBlocks;
 	void removeBlock(sf::Sprite& spaced);
 	void backBlock(sf::Sprite& spaced);
@@ -222,6 +222,8 @@ private:
 	std::vector<int> randLadderEnemySpawn;
 	void updateEnemyDeath(Enemy& enemy);
 	std::vector<sf::Sprite> holes;
+	void updateEnemyPickGold(Enemy& enemy);
+
 
 };
 

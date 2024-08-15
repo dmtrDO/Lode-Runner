@@ -64,14 +64,27 @@ bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
 		isCaught = false;
 		isClimbed = true;
 		return true;
-	} else if (isClimbed && rect.getGlobalBounds().intersects(hole.getGlobalBounds(), intersection) && intersection.width > 0) {
+	} else if (isClimbed && rect.getGlobalBounds().intersects(hole.getGlobalBounds(), intersection) && intersection.width > help) {
 		if (checkLeft() && checkRight() || 
 			checkLeft() && sprite1.getGlobalBounds().left == 32.0f * 30.0f - 30.0f ||
 			checkRight() && sprite1.getGlobalBounds().left == 0.0f) {
 			isClimbed = false;
 			return true;
 		}
-		animateLR();
+
+		int counter = 0;
+		for (sf::Sprite& sprite : spritesWorkout) {
+			if (sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds()) && sprite1.getGlobalBounds().top == sprite.getGlobalBounds().top) {
+				counter++;
+				isWorkout = true;
+				break;
+			}
+		}
+		
+		if (counter != 0)
+			animateWorkout();
+		else
+			animateLR();
 
 		if (changedDirectionCounter == 0) {
 			changedDirectionCounter++;
@@ -87,6 +100,17 @@ bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
 		sprite1.setScale(direction, 1);
 		sprite1.move(fabs(mainSpeed) * deltaTime.asSeconds() * direction, 0);
 		return true;
+	} else if (isClimbed && rect.getGlobalBounds().intersects(hole.getGlobalBounds(), intersection) && intersection.width <= help && intersection.width > 0) {
+		int left = static_cast<int>(rect.getGlobalBounds().left);
+		int mod = left % 30;
+		if (mod > 15) {
+			mod = 30 - mod;
+			left += mod;
+		} else if (mod < 15) left -= mod;
+
+		sprite1.setPosition((float)left + 15, sprite1.getGlobalBounds().top + 15);
+		isClimbed = false;
+		return true;
 	} else {
 		hole.setPosition(-100.0f, -100.0f);
 		isClimbed = false;
@@ -95,7 +119,7 @@ bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
 		changedDirectionCounter = 0;
 		if (isFromFly) {
 			isFromFly = false;
-			sprite1.setTexture(texture0);
+			if (isWorkout == false) sprite1.setTexture(texture0);
 		}
 	}
 
@@ -497,7 +521,7 @@ bool Enemy::updateFly() {
 				if (movingUp) return false;
 				for (sf::Sprite spr : forFly) {
 					sf::FloatRect area;
-					if (rect.getGlobalBounds().intersects(spr.getGlobalBounds(), area) && area.width < help) {
+					if (rect.getGlobalBounds().intersects(spr.getGlobalBounds(), area) && area.width < 2 * help) {
 						int counter = 0;
 						for (sf::Sprite& spri : forFly) {
 							if (rect.getGlobalBounds().intersects(spri.getGlobalBounds()) && spri.getGlobalBounds().getPosition() != spr.getGlobalBounds().getPosition()) {
@@ -578,7 +602,7 @@ bool Enemy::updateFly() {
 					return true;
 				}
 			}
-			/*if (intersection.width < help) {
+			if (intersection.width < help) {
 				int counts = 0;
 				for (sf::Sprite& spr : spritesUD) {
 					if (spriteBounds.intersects(spr.getGlobalBounds()) && spr.getGlobalBounds().getPosition() != sprite.getGlobalBounds().getPosition()) {
@@ -597,7 +621,7 @@ bool Enemy::updateFly() {
 					sprite1.setPosition(left + 15, spriteTop + 15);
 					return true;
 				}
-			}*/
+			}
 			return false;
 		}
 	}
