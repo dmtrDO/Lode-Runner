@@ -32,8 +32,6 @@ public:
 
 private:
 	void setWindow();
-	///// 23 x 32 blocks
-   ///// 1 block = 30 x 30 pixels
 
 	void setIcon();
 
@@ -223,6 +221,9 @@ private:
 	void updateEnemyDeath(Enemy& enemy);
 	std::vector<sf::Sprite> holes;
 	void updateEnemyPickGold(Enemy& enemy);
+	int enemyPercent;
+	std::mt19937 generator;
+	bool updateOnEnemy(sf::Time deltaTime);
 
 
 };

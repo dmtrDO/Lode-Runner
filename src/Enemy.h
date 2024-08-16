@@ -3,6 +3,7 @@
 #define ENEMY
 
 #include <iostream>
+#include <random>
 #include "images.h"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
@@ -25,6 +26,7 @@ public:
 	
 	void initMoves();
 
+	bool isFlyingTexture;
 	bool isFromFly;
 	bool updateFly();
 	bool updateCaught(sf::Time deltaTime, sf::Sprite& goal);
@@ -32,6 +34,15 @@ public:
 	bool isClimbed;
 	int direction;
 	int changedDirectionCounter;
+
+	bool isPickedGold;
+	bool onGold;
+	sf::Clock pickedGoldTimer;
+	int pickedGoldTime;
+	std::mt19937 generator;
+	std::uniform_int_distribution<int> distribution;
+	sf::Sprite goldSprite;
+	bool isDropped;
 
 	void updateMoveLR(sf::Time deltaTime);
 	void updateMoveUD(sf::Time deltaTime);
@@ -51,6 +62,8 @@ private:
 
 	bool checkLeft() const;
 	bool checkRight() const;
+	bool checkEnemyLeft() const;
+	bool checkEnemyRight() const;
 
 	sf::Clock clockAnimationLR;
 	sf::Clock clockAnimationUD;
@@ -101,7 +114,6 @@ private:
 	std::vector<sf::Texture> texturesToMoveLR;
 	std::vector<sf::Texture> texturesToMoveUD;
 	std::vector<sf::Texture> texturesForWorkout;
-
 };
 
 #endif

@@ -1,11 +1,11 @@
 
 #include "Enemy.h"
 
-std::vector<sf::Sprite> Enemy::forFly;
-std::vector<sf::Sprite> Enemy::spritesWorkout;
-std::vector<sf::Sprite> Enemy::spritesUD;
-std::vector<sf::Sprite> Enemy::blocks;
-std::vector<sf::Sprite> Enemy::holes;
+std::vector <sf::Sprite> Enemy::forFly;
+std::vector <sf::Sprite> Enemy::spritesWorkout;
+std::vector <sf::Sprite> Enemy::spritesUD;
+std::vector <sf::Sprite> Enemy::blocks;
+std::vector <sf::Sprite> Enemy::holes;
 
 Enemy::Enemy(sf::FloatRect bounds) {
 	loadTextures();
@@ -13,6 +13,7 @@ Enemy::Enemy(sf::FloatRect bounds) {
 	sprite1.setColor(sf::Color::Magenta);
 	sprite1.setOrigin(15.0f, 15.0f);
 	sprite1.setPosition(bounds.left + 15.0f, bounds.top + 15.0f);
+	generator.seed(static_cast<unsigned int>(std::time(nullptr)));
 }
 
 bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
@@ -47,7 +48,8 @@ bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
 		!(sprite1.getGlobalBounds().top + 30.0f >= hole.getGlobalBounds().top && sprite1.getGlobalBounds().top + 30.0f <= hole.getGlobalBounds().top + help)) {
 		int counter = 0;
 		for (sf::Sprite& sprite : blocks) {
-			if (sprite.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 15.0f, sprite1.getGlobalBounds().top - help)) {
+			if (sprite.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 1.0f, sprite1.getGlobalBounds().top - help) ||
+				sprite.getGlobalBounds().contains(sprite1.getGlobalBounds().left + 29.0f, sprite1.getGlobalBounds().top - help)) {
 				counter++;
 				hole.setPosition(-100.0f, -100.0f);
 				break;
@@ -55,6 +57,7 @@ bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
 		}
 		if (counter == 0) {
 			animateUD();
+			isFlyingTexture = false;
 			sprite1.move(0, -fabs(mainSpeed) * deltaTime.asSeconds());
 		} 
 		return true;
@@ -65,7 +68,8 @@ bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
 		isClimbed = true;
 		return true;
 	} else if (isClimbed && rect.getGlobalBounds().intersects(hole.getGlobalBounds(), intersection) && intersection.width > help) {
-		if (checkLeft() && checkRight() || 
+
+		if (checkLeft() && checkRight() ||
 			checkLeft() && sprite1.getGlobalBounds().left == 32.0f * 30.0f - 30.0f ||
 			checkRight() && sprite1.getGlobalBounds().left == 0.0f) {
 			isClimbed = false;
@@ -99,7 +103,21 @@ bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
 
 		sprite1.setScale(direction, 1);
 		sprite1.move(fabs(mainSpeed) * deltaTime.asSeconds() * direction, 0);
+
+		if ((checkEnemyLeft() && direction == -1 || checkEnemyRight() && direction == 1) && intersection.width < 30.0f - help) {
+			hole.setPosition(-100.0f, -100.0f);
+			isClimbed = false;
+			isCaught = false;
+			direction = 1;
+			changedDirectionCounter = 0;
+			if (isFromFly) {
+				isFromFly = false;
+				if (isWorkout == false) sprite1.setTexture(texture0);
+			}
+		}
+
 		return true;
+
 	} else if (isClimbed && rect.getGlobalBounds().intersects(hole.getGlobalBounds(), intersection) && intersection.width <= help && intersection.width > 0) {
 		int left = static_cast<int>(rect.getGlobalBounds().left);
 		int mod = left % 30;
@@ -181,6 +199,7 @@ void Enemy::updateMoveLR(sf::Time deltaTime) {
 				sprite1.move(0, deltaTime.asSeconds() * mainSpeed);
 				onUD = false;
 				isFromFly = false;
+				isFlyingTexture = false;
 				if (spriteTop >= spriteRect.top - (30 + help) && spriteTop <= spriteRect.top - (30 - help)) {
 					sprite1.setPosition(spriteLeft + 15, spriteRect.top - 15);
 				}
@@ -198,6 +217,7 @@ void Enemy::updateMoveLR(sf::Time deltaTime) {
 				sprite1.move(0, deltaTime.asSeconds() * mainSpeed);
 				onUD = false;
 				isFromFly = false;
+				isFlyingTexture = false;
 
 				if (spriteTop > spriteRect.top - help && spriteTop < spriteRect.top + help) {
 					sprite1.setPosition(spriteLeft + 15, spriteRect.top + 15);
@@ -262,6 +282,7 @@ void Enemy::updateMoveLR(sf::Time deltaTime) {
 				sprite1.move(deltaTime.asSeconds() * mainSpeed, 0);
 				onUD = false;
 				isFromFly = false;
+				isFlyingTexture = false;
 				return;
 			}
 		}
@@ -270,6 +291,7 @@ void Enemy::updateMoveLR(sf::Time deltaTime) {
 	sprite1.move(deltaTime.asSeconds() * mainSpeed, 0);
 	onUD = false;
 	isFromFly = false;
+	isFlyingTexture = false;
 }
 
 void Enemy::updateMoveUD(sf::Time deltaTime) {
@@ -305,7 +327,10 @@ void Enemy::updateMoveUD(sf::Time deltaTime) {
 				break;
 			}
 		}
-		if (tempIgnore && tmp && !onUD) sprite1.setTexture(texture0);
+		if (tempIgnore && tmp && !onUD) {
+			sprite1.setTexture(texture0);
+			isFlyingTexture = false;
+		}
 		return;
 	}
 	bool temp = true;
@@ -391,6 +416,7 @@ void Enemy::updateMoveUD(sf::Time deltaTime) {
 		tempIgnore = true;
 		sprite1.move(deltaTime.asSeconds() * mainSpeed, 0);
 		isFromFly = false;
+		isFlyingTexture = false;
 		onUD = false;
 		bool intersects = false;
 		for (sf::Sprite& sprite : spritesWorkout) {
@@ -406,6 +432,7 @@ void Enemy::updateMoveUD(sf::Time deltaTime) {
 	sprite1.move(0, deltaTime.asSeconds() * mainSpeed);
 	onUD = false;
 	isFromFly = false;
+	isFlyingTexture = false;
 	animateUD();
 }
 
@@ -643,6 +670,11 @@ bool Enemy::updateFly() {
 }
 
 void Enemy::initVariables() {
+	isFlyingTexture = true;
+	isDropped = false;
+	pickedGoldTime = 0;
+	onGold = false;
+	isPickedGold = false;
 	changedDirectionCounter = 0;
 	direction = 1;
 	hole.setPosition(-100.0f, -100.0f);
@@ -662,7 +694,7 @@ void Enemy::initVariables() {
 	movingLeft = false;
 	movingRight = false;
 	movingUp = false;
-	mainSpeed = 60.0f;
+	mainSpeed = 90.0f;
 	animationMoveIntervalLR = 45.0f;
 	animationMoveIntervalUD = 28.0f;
 	animationMoveIntervalWorkout = 42.0f;
@@ -772,6 +804,28 @@ bool Enemy::checkLeft() const {
 	for (sf::Sprite& block : blocks) {
 		if (block.getGlobalBounds().contains(sprite1.getGlobalBounds().left - help, sprite1.getGlobalBounds().top + 0.001f)
 			|| block.getGlobalBounds().contains(sprite1.getGlobalBounds().left - help, sprite1.getGlobalBounds().top + 29.999f)) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Enemy::checkEnemyLeft() const {
+	sf::RectangleShape rect(sf::Vector2f(help, 30.0f));
+	rect.setPosition(sprite1.getGlobalBounds().left - help, sprite1.getGlobalBounds().top);
+	for (sf::Sprite& block : blocks) {
+		if (rect.getGlobalBounds().intersects(block.getGlobalBounds())) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Enemy::checkEnemyRight() const {
+	sf::RectangleShape rect(sf::Vector2f(help, 30.0f));
+	rect.setPosition(sprite1.getGlobalBounds().left + 30.0f, sprite1.getGlobalBounds().top);
+	for (sf::Sprite& block : blocks) {
+		if (rect.getGlobalBounds().intersects(block.getGlobalBounds())) {
 			return true;
 		}
 	}
