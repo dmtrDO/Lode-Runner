@@ -224,9 +224,12 @@ private:
 	int enemyPercent;
 	std::mt19937 generator;
 	bool updateOnEnemy(sf::Time deltaTime);
-
+	bool updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime);
+	bool checkR();
+	bool checkL();
 
 };
 
 #endif
+
 

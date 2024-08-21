@@ -253,7 +253,7 @@ void Enemy::updateMoveLR(sf::Time deltaTime) {
 
 	if (movingLeft) {
 		if (sprite1.getPosition().x <= 15 + help || checkLeft()) {
-			if ((checkLeft() || spriteLeft <= 0) && isWorkout == false && onUD == false) sprite1.setTexture(texture0);
+			if ((checkLeft() || spriteLeft <= help) && isWorkout == false && onUD == false) sprite1.setTexture(texture0);
 			sprite1.setPosition(float(left) + 15, spriteTop + 15);
 			return;
 		}
@@ -437,6 +437,7 @@ void Enemy::updateMoveUD(sf::Time deltaTime) {
 }
 
 bool Enemy::updateFly() {
+
 	sf::RectangleShape rect(sf::Vector2f(30.0f, help));
 	rect.setPosition(sprite1.getGlobalBounds().left, sprite1.getGlobalBounds().top + 30);
 
@@ -670,7 +671,7 @@ bool Enemy::updateFly() {
 }
 
 void Enemy::initVariables() {
-	isFlyingTexture = true;
+	isFlyingTexture = false;
 	isDropped = false;
 	pickedGoldTime = 0;
 	onGold = false;
@@ -694,7 +695,7 @@ void Enemy::initVariables() {
 	movingLeft = false;
 	movingRight = false;
 	movingUp = false;
-	mainSpeed = 90.0f;
+	mainSpeed = 70.0f;
 	animationMoveIntervalLR = 45.0f;
 	animationMoveIntervalUD = 28.0f;
 	animationMoveIntervalWorkout = 42.0f;
