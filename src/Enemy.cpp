@@ -37,7 +37,8 @@ bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
 
 	if (sprite1.getGlobalBounds().top + 30.0f >= hole.getGlobalBounds().top + 30.0f - help &&
 		sprite1.getGlobalBounds().top + 30.0f <= hole.getGlobalBounds().top + 30.0f &&
-		sprite1.getGlobalBounds().top != hole.getGlobalBounds().top && isCaught == false && isFromFly) {
+		sprite1.getGlobalBounds().getPosition() != hole.getGlobalBounds().getPosition() && isCaught == false && isFromFly) {
+		isWorkout = false;
 		isCaught = true;
 		sprite1.setPosition(hole.getGlobalBounds().left + 15.0f, hole.getGlobalBounds().top + 15.0f);
 		caughtTimer.restart();
@@ -568,6 +569,31 @@ bool Enemy::updateFly() {
 						return true;
 					}
 				}
+
+				int floorCounter = 0;
+				sf::FloatRect floorArea;
+				for (sf::Sprite& spr : forFly) {
+					if (!rect.getGlobalBounds().intersects(spr.getGlobalBounds())
+						|| (rect.getGlobalBounds().intersects(spr.getGlobalBounds(), floorArea) && floorArea.width < 2 * help)) floorCounter++;
+				}
+				if (floorCounter == forFly.size()) {
+					int ladCounter = 0;
+					for (sf::Sprite& spr : spritesUD) {
+						sf::FloatRect intersectionArea;
+						if (spriteBounds.intersects(spr.getGlobalBounds(), intersectionArea) && intersectionArea.width < 2 * help
+							&& spriteTop == spr.getGlobalBounds().top) ladCounter++;
+					}
+					if (ladCounter == 1) {
+						int left = static_cast<int>(rect.getGlobalBounds().left);
+						int mod = left % 30;
+						if (mod > 15) {
+							mod = 30 - mod;
+							left += mod;
+						} else if (mod < 15) left -= mod;
+						sprite1.setPosition((float)left + 15, spriteTop + 15 + help + 0.01f);
+					}
+				}
+
 				for (sf::Sprite& spr : blocks) {
 					if (rect.getGlobalBounds().intersects(spr.getGlobalBounds())) return false;
 				}
@@ -658,7 +684,11 @@ bool Enemy::updateFly() {
 	for (sf::Sprite& sprite : forFly) {
 		if (!rect.getGlobalBounds().intersects(sprite.getGlobalBounds())) tmpCounter++;
 	}
-	if (tmpCounter == forFly.size()) return true;
+	if (tmpCounter == forFly.size()) {
+		if ((int)spriteLeft % 30 == 0) sprite1.setPosition((int)spriteLeft + 15.0f, spriteTop + 15.0f);
+		if ((int)(spriteLeft + 1.0f) % 30 == 0) sprite1.setPosition((int)(spriteLeft + 1.0f) + 15.0f, spriteTop + 15.0f);
+		return true;
+	}
 
 	for (sf::Sprite& sprite : forFly) {
 		if (rect.getGlobalBounds().intersects(sprite.getGlobalBounds())) {
