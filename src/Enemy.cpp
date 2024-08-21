@@ -93,22 +93,22 @@ bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
 		if (changedDirectionCounter == 0) {
 			changedDirectionCounter++;
 			if (sprite1.getGlobalBounds().left > goal.getGlobalBounds().left) {
-				direction = -1;
-				if (checkLeft()) direction = 1;
+				caughtDirection = -1;
+				if (checkLeft()) caughtDirection = 1;
 			} else {
-				direction = 1;
-				if (checkRight() || sprite1.getGlobalBounds().left + 30.0f == 32.0f * 30.0f) direction = -1;
+				caughtDirection = 1;
+				if (checkRight() || sprite1.getGlobalBounds().left + 30.0f == 32.0f * 30.0f) caughtDirection = -1;
 			}
 		}
 
-		sprite1.setScale(direction, 1);
-		sprite1.move(fabs(mainSpeed) * deltaTime.asSeconds() * direction, 0);
+		sprite1.setScale(caughtDirection, 1);
+		sprite1.move(fabs(mainSpeed) * deltaTime.asSeconds() * caughtDirection, 0);
 
-		if ((checkEnemyLeft() && direction == -1 || checkEnemyRight() && direction == 1) && intersection.width < 30.0f - help) {
+		if ((checkEnemyLeft() && caughtDirection == -1 || checkEnemyRight() && caughtDirection == 1) && intersection.width < 30.0f - help) {
 			hole.setPosition(-100.0f, -100.0f);
 			isClimbed = false;
 			isCaught = false;
-			direction = 1;
+			caughtDirection = 1;
 			changedDirectionCounter = 0;
 			if (isFromFly) {
 				isFromFly = false;
@@ -133,7 +133,7 @@ bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
 		hole.setPosition(-100.0f, -100.0f);
 		isClimbed = false;
 		isCaught = false;
-		direction = 1;
+		caughtDirection = 1;
 		changedDirectionCounter = 0;
 		if (isFromFly) {
 			isFromFly = false;
@@ -671,13 +671,14 @@ bool Enemy::updateFly() {
 }
 
 void Enemy::initVariables() {
+	direction = 1;
 	isFlyingTexture = false;
 	isDropped = false;
 	pickedGoldTime = 0;
 	onGold = false;
 	isPickedGold = false;
 	changedDirectionCounter = 0;
-	direction = 1;
+	caughtDirection = 1;
 	hole.setPosition(-100.0f, -100.0f);
 	isCaught = false;
 	isClimbed = false;

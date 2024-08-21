@@ -18,6 +18,8 @@ public:
 
 	sf::Sprite sprite1;
 
+	int direction;
+
 	bool movingLeft;
 	bool movingRight;
 	bool movingDown;
@@ -32,7 +34,7 @@ public:
 	bool updateCaught(sf::Time deltaTime, sf::Sprite& goal);
 	bool isCaught;
 	bool isClimbed;
-	int direction;
+	int caughtDirection;
 	int changedDirectionCounter;
 
 	bool isPickedGold;

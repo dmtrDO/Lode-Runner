@@ -43,10 +43,6 @@ void Game::handle() {
 }
 
 void Game::update() {
-
-    std::cout << "sprite1: " << enemies.at(0).sprite1.getGlobalBounds().left << "\t" << enemies.at(0).sprite1.getGlobalBounds().top << "\t" <<
-        "sprite2: " << enemies.at(1).sprite1.getGlobalBounds().left << "\t" << enemies.at(1).sprite1.getGlobalBounds().top << "\n";
-
     if (window.hasFocus() && isStart == true) updateFPS();
     if (!window.hasFocus()) {
         movingDown = false;
@@ -1562,7 +1558,7 @@ void Game::updateEnemyDeath(Enemy& enemy) {
         if (enemy.sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds())) {
             enemy.isCaught = false;
             enemy.isClimbed = false;
-            enemy.direction = 1;
+            enemy.caughtDirection = 1;
             enemy.changedDirectionCounter = 0;
             std::uniform_int_distribution<int> distribution;
             if (randEnemySpawnNums.empty() == false)
@@ -1732,6 +1728,7 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
         if (dSide.getGlobalBounds().intersects(sprite.sprite1.getGlobalBounds()) && sprite.isCaught == true) {
             if (enemy.sprite1.getGlobalBounds().top != sprite.sprite1.getGlobalBounds().top - 30.0f)
                 enemy.sprite1.setPosition(enemy.sprite1.getGlobalBounds().left + 15.0f, sprite.sprite1.getGlobalBounds().top - 30.0f + 15.0f);
+            if (enemy.updateCaught(deltaTime, sprite1)) return true;
             enemy.updateMoveLR(deltaTime);
             enemy.updateMoveUD(deltaTime);
             if (enemy.isFromFly) enemy.sprite1.setTexture(texture13);
@@ -1850,12 +1847,14 @@ bool Game::updateOnEnemy(sf::Time deltaTime) {
 
                 sf::FloatRect area;
                 for (sf::Sprite& sprite : forFly) {
-                    if (sprite.getGlobalBounds().intersects(rRect.getGlobalBounds(), area) && movingRight && float((int)sprite1.getGlobalBounds().top % 30 == 0) && checkR() == false) {
+                    if (sprite.getGlobalBounds().intersects(rRect.getGlobalBounds(), area) && movingRight && 
+                        float((int)sprite1.getGlobalBounds().top % 30 == 0) && checkR() == false) {
                         sprite1.setPosition(sprite1.getGlobalBounds().left + 15.0f, (int)sprite1.getGlobalBounds().top + 15.0f);
                         updateMoveLR(deltaTime);
                         return true;
                     }
-                    if (sprite.getGlobalBounds().intersects(lRect.getGlobalBounds(), area) && movingLeft && float((int)sprite1.getGlobalBounds().top % 30 == 0)) {
+                    if (sprite.getGlobalBounds().intersects(lRect.getGlobalBounds(), area) && movingLeft && 
+                        float((int)sprite1.getGlobalBounds().top % 30 == 0) && checkL() == false) {
                         sprite1.setPosition(sprite1.getGlobalBounds().left + 15.0f, (int)sprite1.getGlobalBounds().top + 15.0f);
                         updateMoveLR(deltaTime);
                         return true;
@@ -1901,9 +1900,19 @@ bool Game::checkR() {
     return false;
 }
 
+
+
+
+
+
+
+
+
+
+
 void Game::setEnemyMove(Enemy& enemy) {
 
-    sf::RectangleShape rect(sf::Vector2f(30.0f, help));
+     sf::RectangleShape rect(sf::Vector2f(30.0f, help));
      rect.setPosition(enemy.sprite1.getGlobalBounds().left, enemy.sprite1.getGlobalBounds().top + 30.0f);
 
      for (sf::Sprite& sprite : spritesUD) {
@@ -1921,10 +1930,8 @@ void Game::setEnemyMove(Enemy& enemy) {
 
      if (enemy.sprite1.getGlobalBounds().left > sprite1.getGlobalBounds().left)
          enemy.movingLeft = true;
-     else
+     else if (enemy.sprite1.getGlobalBounds().left < sprite1.getGlobalBounds().left)
          enemy.movingRight = true;
-
-
 
     if (enemy.sprite1.getGlobalBounds().top <= 0) enemy.movingUp = false;
 
@@ -1935,10 +1942,16 @@ void Game::setEnemyMove(Enemy& enemy) {
 
 
 
-    enemy.movingDown = movingDown;
-    enemy.movingLeft = movingLeft;
-    enemy.movingRight = movingRight;
-    enemy.movingUp = movingUp;
+
+
+
+
+
+
+
+
+
+        // enemy.movingDown = movingDown; enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp;
 }
 
 
