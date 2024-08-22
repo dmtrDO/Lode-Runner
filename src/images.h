@@ -49,4 +49,4 @@ extern unsigned char __49_png[]; extern unsigned int __49_png_len;
 extern unsigned char __50_png[]; extern unsigned int __50_png_len;
 extern unsigned char __51_png[]; extern unsigned int __51_png_len;
 extern unsigned char __52_png[]; extern unsigned int __52_png_len;
-#endif // !IMAGES
+#endif 

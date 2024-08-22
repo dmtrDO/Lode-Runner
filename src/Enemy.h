@@ -19,6 +19,7 @@ public:
 	sf::Sprite sprite1;
 
 	int direction;
+	bool isDirectionChanged;
 
 	bool movingLeft;
 	bool movingRight;
@@ -40,6 +41,7 @@ public:
 	bool isPickedGold;
 	bool onGold;
 	sf::Clock pickedGoldTimer;
+	sf::Clock pickUpInterval;
 	int pickedGoldTime;
 	std::mt19937 generator;
 	std::uniform_int_distribution<int> distribution;
