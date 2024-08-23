@@ -1048,8 +1048,8 @@ void Game::initVariables() {
     isStart = false;
     screenFade.setTexture(texture20);
     screenFade.setScale(32.0f, 22.0f);
-    transitionSpeed = 3;
-    opacity = 3;
+    transitionSpeed = 5;
+    opacity = 5;
     isDrawnFade = false;
     isWin = false;
     isRestart = false;
@@ -1073,9 +1073,9 @@ void Game::initVariables() {
     deletedBlockInterval = 7.0f;
     reawakenedInterval = 30.0f;
     miniAnimateInterval = 15.0f;
-    animationMoveIntervalLR = 32.0f;
-    animationMoveIntervalUD = 20.0f;
-    animationMoveIntervalWorkout = 40.0f;
+    animationMoveIntervalLR = 35.0f;
+    animationMoveIntervalUD = 30.0f;
+    animationMoveIntervalWorkout = 45.0f;
     deletedTextures = { texture33, texture34, texture35, texture36, texture37, texture38, texture39, texture20 };
     reawakenedTextures = { texture40, texture41, texture42, texture43, texture44, texture45, texture46, texture47, texture48, texture49, texture50, texture51, texture15 };
     texturesToMoveLR = { texture1, texture2, texture3, texture4, texture5, texture4, texture3, texture2, texture1, texture10, texture11, texture12 };
@@ -1154,6 +1154,7 @@ winsize = sf::Vector2u(500 * 32 / 23, 500);        /////////////////////////////
     window.setPosition(sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - width) / 2), 0));
     window.setSize(sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr));
     window.setMouseCursorVisible(false);
+    window.setFramerateLimit(1000);
 }
 
 void Game::setIcon() {
@@ -2046,6 +2047,9 @@ void Game::setEnemyMove(Enemy& enemy) {
     rSide.setPosition(enemy.sprite1.getGlobalBounds().left + 30.0f, enemy.sprite1.getGlobalBounds().top);
     
     if (enemy.sprite1.getGlobalBounds().left < sprite1.getGlobalBounds().left) {
+        if (enemy.direction == -1) {
+            enemy.isDirectionChanged = true;
+        }
         enemy.movingRight = true;
         enemy.direction = 1;
         
@@ -2057,7 +2061,7 @@ void Game::setEnemyMove(Enemy& enemy) {
         
     }
 
-    sf::RectangleShape rect(sf::Vector2f(30.0f, help));
+    /*sf::RectangleShape rect(sf::Vector2f(30.0f, help));
     rect.setPosition(enemy.sprite1.getGlobalBounds().left, enemy.sprite1.getGlobalBounds().top + 30.0f);
 
     for (sf::Sprite& sprite : spritesUD) {
@@ -2093,7 +2097,7 @@ void Game::setEnemyMove(Enemy& enemy) {
                 enemy.movingDown = true;
             }
         }
-    }
+    }*/
 
 
 
