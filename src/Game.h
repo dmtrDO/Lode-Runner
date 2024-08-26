@@ -32,6 +32,8 @@ public:
 
 private:
 	void setWindow();
+	int windowWidth;
+	int windowHeight;
 
 	void setIcon();
 
@@ -200,6 +202,7 @@ private:
 	float fps;
 	sf::Clock framesClock;
 	void updateFPS();
+	std::vector<float> fpsArr;
 	void showError(std::wstring finalMessage);
 	void showErrorWithLink(std::wstring finalMessage, float step);
 	void drawLevel();
@@ -212,6 +215,8 @@ private:
 	unsigned char transitionSpeed;
 
 	bool isStart;
+	sf::Clock startTimeDelay;
+
 	std::vector<Enemy> enemies;
 	void setEnemies();
 	void setEnemyMove(Enemy& enemy);
@@ -227,7 +232,11 @@ private:
 	bool updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime);
 	bool checkR();
 	bool checkL();
-
+	bool isEnemyFlying(sf::Sprite& enemy);
+	bool isEnableEnemyRight(Enemy& enemy);
+	bool isEnableEnemyLeft(Enemy& enemy);
+	bool isEnableEnemyUp(Enemy& enemy);
+	bool isEnableEnemyDown(Enemy& enemy);
 };
 
 #endif

@@ -46,7 +46,6 @@ public:
 	std::mt19937 generator;
 	std::uniform_int_distribution<int> distribution;
 	sf::Sprite goldSprite;
-	bool isDropped;
 
 	void updateMoveLR(sf::Time deltaTime);
 	void updateMoveUD(sf::Time deltaTime);
@@ -58,6 +57,9 @@ public:
 	static std::vector <sf::Sprite> holes;
 
 private:
+
+	int windowWidth;
+	int windowHeight;
 
 	sf::Clock caughtTimer;
 	sf::Sprite hole;
@@ -82,6 +84,7 @@ private:
 	bool isWorkout;
 	bool ignoreUD;
 	bool moveLR;
+	bool tempIgnore;
 	int frameIndexLR;
 	int frameIndexUD;
 	int frameIndexWorkout;

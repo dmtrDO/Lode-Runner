@@ -76,7 +76,7 @@ bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
 	} else if (isClimbed && rect.getGlobalBounds().intersects(hole.getGlobalBounds(), intersection) && intersection.width > help) {
 
 		if (checkLeft() && checkRight() ||
-			checkLeft() && spriteLeft == 32.0f * 30.0f - 30.0f ||
+			checkLeft() && spriteLeft == windowWidth * 30.0f - 30.0f ||
 			checkRight() && spriteLeft == 0.0f) {
 			isClimbed = false;
 			return true;
@@ -103,7 +103,7 @@ bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
 				if (checkLeft()) caughtDirection = 1;
 			} else {
 				caughtDirection = 1;
-				if (checkRight() || spriteLeft + 30.0f == 32.0f * 30.0f) caughtDirection = -1;
+				if (checkRight() || spriteLeft + 30.0f == windowWidth * 30.0f) caughtDirection = -1;
 			}
 		}
 
@@ -193,7 +193,7 @@ void Enemy::updateMoveLR(sf::Time deltaTime) {
 		sf::FloatRect spriteRect = sprite.getGlobalBounds();
 		if (spriteRect.intersects(spriteBounds) && spriteRect.left == spriteLeft) {
 			if ((movingLeft || movingRight) && spriteTop + 15 >= spriteRect.top - 15 && spriteTop + 15 <= spriteRect.top) {
-				if (movingLeft && sprite1.getPosition().x <= 15 + help || movingRight && sprite1.getPosition().x >= 32 * 30 - 15 - help) return;
+				if (movingLeft && sprite1.getPosition().x <= 15 + help || movingRight && sprite1.getPosition().x >= windowWidth * 30 - 15 - help) return;
 				for (const sf::Sprite& block : blocks) {
 					if ((block.getGlobalBounds().contains(spriteLeft - 0.01f, spriteTop + 15.0f) && movingLeft) ||
 						(block.getGlobalBounds().contains(spriteLeft + 30.01f, spriteTop + 15.0f) && movingRight))
@@ -213,7 +213,7 @@ void Enemy::updateMoveLR(sf::Time deltaTime) {
 				}
 				return;
 			}
-			if (movingLeft && sprite1.getPosition().x <= 15 + help || movingRight && sprite1.getPosition().x >= 32 * 30 - 15 - help) return;
+			if (movingLeft && sprite1.getPosition().x <= 15 + help || movingRight && sprite1.getPosition().x >= windowWidth * 30 - 15 - help) return;
 			if (spriteTop != spriteRect.top && spriteRect.contains(spriteLeft + 15, spriteTop + 15) && (movingRight || movingLeft)) {
 				for (const sf::Sprite& block : blocks) {
 					if ((block.getGlobalBounds().contains(spriteLeft - 0.01f, spriteTop + 15.0f) && movingLeft) ||
@@ -249,7 +249,7 @@ void Enemy::updateMoveLR(sf::Time deltaTime) {
 	} else if (mod < 15) left -= mod;
 
 	if (movingRight) {
-		if (sprite1.getPosition().x >= 32 * 30 - 15 - help || checkRight()) {
+		if (sprite1.getPosition().x >= windowWidth * 30 - 15 - help || checkRight()) {
 
 			int workCounter = 0;
 			for (sf::Sprite& sprite : spritesWorkout) {
@@ -257,7 +257,7 @@ void Enemy::updateMoveLR(sf::Time deltaTime) {
 			}
 			if (workCounter == spritesWorkout.size()) isWorkout = false;
 
-			if ((checkRight() || spriteLeft >= 23 * 32 - 30) && isWorkout == false && onUD == false) sprite1.setTexture(texture0);
+			if ((checkRight() || spriteLeft >= windowHeight * windowWidth - 30) && isWorkout == false && onUD == false) sprite1.setTexture(texture0);
 			sprite1.setPosition(float(left) + 15, spriteTop + 15);
 			return;
 		}
@@ -327,14 +327,13 @@ void Enemy::updateMoveUD(sf::Time deltaTime) {
 	helpArea.setPosition(spriteLeft + 15, spriteTop + 15);
 
 	bool tmpLR = true;
-	if (spriteLeft == 0 && movingLeft || spriteLeft == 32 * 30 - 30 && movingRight) tmpLR = false;
+	if (spriteLeft == 0 && movingLeft || spriteLeft == windowWidth * 30 - 30 && movingRight) tmpLR = false;
 	for (sf::Sprite& block : blocks) {
 		sf::FloatRect blockBounds = block.getGlobalBounds();
 		if (blockBounds.contains(spriteLeft - 0.01f, spriteTop + 15.0f) && movingLeft) { tmpLR = false; break; }
 		if (blockBounds.contains(spriteLeft + 30.01f, spriteTop + 15.0f) && movingRight) { tmpLR = false; break; }
 	}
 	if ((movingRight || movingLeft) && tmpLR) return;
-	static bool tempIgnore = false;
 	if ((!movingUp && !movingDown) || (movingUp && movingDown)) {
 		bool tmp = true;
 		for (sf::Sprite& sprite : spritesWorkout) {
@@ -412,7 +411,7 @@ void Enemy::updateMoveUD(sf::Time deltaTime) {
 					isFromFly = false;
 					bool intersects = false;
 					for (sf::Sprite& sprite : spritesWorkout) {
-						if (spriteBounds.intersects(sprBounds)) {
+						if (spriteBounds.intersects(sprite.getGlobalBounds())) {
 							intersects = true;
 							break;
 						}
@@ -727,8 +726,19 @@ bool Enemy::updateFly() {
 		if (!rectBounds.intersects(sprite.getGlobalBounds())) tmpCounter++;
 	}
 	if (tmpCounter == forFly.size()) {
-		if ((int)spriteLeft % 30 == 0) sprite1.setPosition((int)spriteLeft + 15.0f, spriteTop + 15.0f);
-		if ((int)(spriteLeft + 1.0f) % 30 == 0) sprite1.setPosition((int)(spriteLeft + 1.0f) + 15.0f, spriteTop + 15.0f);
+
+		int md = (int)spriteLeft % 30;
+		if (md >= 15) md = 30 - md;
+		if (md <= help) {
+			int left = static_cast<int>(rectLeft);
+			int mod = left % 30;
+			if (mod > 15) {
+				mod = 30 - mod;
+				left += mod;
+			} else if (mod < 15) left -= mod;
+			sprite1.setPosition(left + 15.0f, spriteTop + 15.0f);
+		}
+
 		return true;
 	}
 
@@ -743,9 +753,11 @@ bool Enemy::updateFly() {
 }
 
 void Enemy::initVariables() {
+	tempIgnore = false;
+	windowWidth = 36;
+	windowHeight = 20;
 	direction = 1;
 	isFlyingTexture = false;
-	isDropped = false;
 	pickedGoldTime = 0;
 	onGold = false;
 	isPickedGold = false;
@@ -763,7 +775,7 @@ void Enemy::initVariables() {
 	frameIndexLR = 0;
 	frameIndexUD = 0;
 	frameIndexWorkout = 0;
-	help = 1.0f;
+	help = 2.0f;
 	movingDown = false;
 	movingLeft = false;
 	movingRight = false;

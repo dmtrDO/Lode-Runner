@@ -15,6 +15,7 @@ Game::Game() {
 }
 
 void Game::handle() {
+    if (startTimeDelay.getElapsedTime().asSeconds() < 1.0f) return;
     sf::Event event;
     while (window.pollEvent(event)) {
         sf::Keyboard::Key key = event.key.code;
@@ -56,7 +57,6 @@ void Game::update() {
     
     if (sprite1.getGlobalBounds().top + 30 <= 0) { isWin = true; return; }
     if (isRestart || isWin) return;
-
     
     if (window.hasFocus()) animateDeleted();
     if (!isVictory) updateGold();
@@ -120,8 +120,18 @@ void Game::drawLevel() {
 void Game::updateFPS() {
     fps++;
     if (framesClock.getElapsedTime().asSeconds() >= 1.0f) {
-        std::cout << fps << "\n";
+     //   std::cout << fps << "\n";
         framesClock.restart();
+        fpsArr.push_back(fps);
+        if (fpsArr.size() == 5) {
+            int average = 0;
+            for (float value : fpsArr) {
+                average += value;
+            }
+            average /= fpsArr.size();
+            if (average < 80) showError(L"Too few frames per second for playing");
+            fpsArr.clear();
+        }
         fps = 0;
     }
 }
@@ -164,7 +174,7 @@ bool Game::updateHelp(sf::Time& deltaTime) {
 
         if (!sprBounds.intersects(helpArea.getGlobalBounds())) continue;
 
-        if (movingLeft && sprite1.getPosition().x <= 15 + help || movingRight && sprite1.getPosition().x >= 32 * 30 - 15 - help) return false;
+        if (movingLeft && sprite1.getPosition().x <= 15 + help || movingRight && sprite1.getPosition().x >= windowWidth * 30 - 15 - help) return false;
         for (sf::Sprite& block : blocks) {
             if (block.getGlobalBounds().contains(spriteLeft - 0.01f, spriteTop + 15.0f) && movingLeft) return false;
             if (block.getGlobalBounds().contains(spriteLeft + 30.01f, spriteTop + 15.0f) && movingRight) return false;
@@ -305,7 +315,8 @@ void Game::updateSpace() {
 }
 
 bool Game::checkSpace(sf::Sprite& sprite) {
-    if (sprite1.getGlobalBounds().top != sprite.getGlobalBounds().top - 30) return true;
+    if (!(sprite1.getGlobalBounds().top + 30.0f >= sprite.getGlobalBounds().top - help &&
+        sprite1.getGlobalBounds().top + 30.0f <= sprite.getGlobalBounds().top + help)) return true;
     for (sf::Sprite& spr : forFly) {
         if (sprite.getGlobalBounds().contains(spr.getGlobalBounds().left + 15, spr.getGlobalBounds().top + 45)) return true;
     }
@@ -451,8 +462,8 @@ void Game::setSprites(int level) {
     if (!file.is_open()) showError(L"Error file loading: " + path + L"\nCheck levels/.rules.txt");
 
     std::vector<sf::Vector2f> vectorOfPositions;
-    for (int i = 0; i < 23; i++) {
-        for (int j = 0; j < 32; j++) {
+    for (int i = 0; i < 20; i++) {
+        for (int j = 0; j < 36; j++) {
             vectorOfPositions.push_back(sf::Vector2f(j * 30.0f, i * 30.0f));
         }
     }
@@ -463,11 +474,11 @@ void Game::setSprites(int level) {
     while (file.get(ch)) {
         if (!std::isdigit(ch) && ch != 'i') continue;
 
-        if (counter < 22 * 32 && ch == '9' && isCorrect1 == true) isCorrect1 = false;
-        if (counter >= 22 * 32 && ch != '9' && isCorrect2 == true) isCorrect2 = false;
+        if (counter < 19 * 36 && ch == '9' && isCorrect1 == true) isCorrect1 = false;
+        if (counter >= 19 * 36 && ch != '9' && isCorrect2 == true) isCorrect2 = false;
 
-        if (ch == '0' && counter < 32) randEnemySpawnNums.push_back(counter);
-        if ((ch == '3' || ch == '6') && counter < 32) randLadderEnemySpawn.push_back(counter);
+        if (ch == '0' && counter < 36) randEnemySpawnNums.push_back(counter);
+        if ((ch == '3' || ch == '6') && counter < 36) randLadderEnemySpawn.push_back(counter);
 
         bool udbool = false;
         bool blocksBool = false;
@@ -531,7 +542,7 @@ void Game::setSprites(int level) {
                 break;
         }
 
-        if (counter == vectorOfPositions.size()) showError(L"Error in " + path + L"\nThe field must be 23 x 32\nCheck levels/.rules.txt");
+        if (counter == vectorOfPositions.size()) showError(L"Error in " + path + L"\nThe field must be 20 x 36\nCheck levels/.rules.txt");
 
         if (victoryUDBool)
             sprite.setPosition(vectorOfPositions[counter].x, vectorOfPositions[counter].y - 2000);
@@ -554,7 +565,7 @@ void Game::setSprites(int level) {
         counter++;
     }
     if (mainPosition.x == -200.0f) showError(L"Error in " + path + L"\nThere must be the main character\nCheck levels/.rules.txt");
-    if (counter != 23 * 32) showError(L"Error in " + path + L"\nThe field must be 23 x 32\nCheck levels/.rules.txt");
+    if (counter != 20 * 36) showError(L"Error in " + path + L"\nThe field must be 20 x 36\nCheck levels/.rules.txt");
     if (isCorrect1 == false) showError(L"Error in " + path + L"\nSymbols '9' should be only at the very bottom\nCheck levels/.rules.txt");
     if (isCorrect2 == false) showError(L"Error in " + path + L"\nThe last row should consist only of '9'\nCheck levels/.rules.txt");
 }
@@ -563,7 +574,7 @@ void Game::setText(int level) {
     text.setFont(font);
     text.setString(std::to_string(level));
     text.setOrigin(text.getGlobalBounds().width / 2, text.getGlobalBounds().height / 2);
-    text.setPosition(32.0f * 30.0f / 2.0f, 23.0f * 30.0f);
+    text.setPosition(windowWidth * 30.0f / 2.0f, windowHeight * 30.0f);
     text.setCharacterSize(24);
     text.setStyle(sf::Text::Bold);
 }
@@ -869,8 +880,19 @@ bool Game::updateFly() {
         if (!rectBounds.intersects(sprite.getGlobalBounds())) tmpCounter++;
     }
     if (tmpCounter == forFly.size()) {
-        if ((int)spriteLeft % 30 == 0) sprite1.setPosition((int)spriteLeft + 15.0f, spriteTop + 15.0f);
-        if ((int)(spriteLeft + 1.0f) % 30 == 0) sprite1.setPosition((int)(spriteLeft + 1.0f) + 15.0f, spriteTop + 15.0f);
+        
+        int md = (int)spriteLeft % 30;
+        if (md >= 15) md = 30 - md;
+        if (md <= help) {
+            int left = static_cast<int>(rectLeft);
+            int mod = left % 30;
+            if (mod > 15) {
+                mod = 30 - mod;
+                left += mod;
+            } else if (mod < 15) left -= mod;
+            sprite1.setPosition(left + 15.0f, spriteTop + 15.0f);
+        }
+
         return true;
     }
 
@@ -894,7 +916,7 @@ void Game::updateMoveUD(sf::Time deltaTime) {
     helpArea.setPosition(spriteLeft + 15, spriteTop + 15);
 
     bool tmpLR = true;
-    if (spriteLeft == 0 && movingLeft || spriteLeft == 32 * 30 - 30 && movingRight) tmpLR = false;
+    if (spriteLeft == 0 && movingLeft || spriteLeft == windowWidth * 30 - 30 && movingRight) tmpLR = false;
     for (sf::Sprite& block : blocks) {
         sf::FloatRect blockBounds = block.getGlobalBounds();
         if (blockBounds.contains(spriteLeft - 0.01f, spriteTop + 15.0f) && movingLeft) { tmpLR = false; break; }
@@ -976,7 +998,7 @@ void Game::updateMoveUD(sf::Time deltaTime) {
                     isFromFly = false;
                     bool intersects = false;
                     for (sf::Sprite& sprite : spritesWorkout) {
-                        if (spriteBounds.intersects(sprBounds)) {
+                        if (spriteBounds.intersects(sprite.getGlobalBounds())) {
                             intersects = true;
                             break;
                         }
@@ -1041,20 +1063,22 @@ void Game::animateUD() {
 }
 
 void Game::initVariables() {
+    windowWidth = 36;
+    windowHeight = 20;
     generator.seed(static_cast<unsigned int>(std::time(nullptr)));
     enemyPercent = 10;
     mainPosition = sf::Vector2f(-200.0f, 0);
     flickTime = 0.4f;
     isStart = false;
     screenFade.setTexture(texture20);
-    screenFade.setScale(32.0f, 22.0f);
+    screenFade.setScale(windowWidth, windowHeight - 1);
     transitionSpeed = 5;
     opacity = 5;
     isDrawnFade = false;
     isWin = false;
     isRestart = false;
     level = getLevel();
-    help = 1.0f;
+    help = 2.0f;
     isFromFly = false;
     space = false;
     onUD = false;
@@ -1134,7 +1158,7 @@ void Game::initVariables() {
 
 void Game::setWindow() {
     int placeForExpr = 20;
-    unsigned int w = 32 * 30, h = 23 * 30;
+    unsigned int w = windowWidth * 30, h = windowHeight * 30;
     sf::VideoMode bestMode;
     for (sf::VideoMode mode : sf::VideoMode::getFullscreenModes()) {
         if (mode.height >= sf::VideoMode::getDesktopMode().height - 2 * placeForExpr) continue;
@@ -1144,17 +1168,12 @@ void Game::setWindow() {
     double k = static_cast<double>(bestMode.height) / static_cast<double>(h);
     double width = k * static_cast<double>(w);
 
-    /*			 //  for creating and test levels
-winpos = sf::Vector2i(1215, 330);                   /////////////////////////////////////////////////////////////
-winsize = sf::Vector2u(500 * 32 / 23, 500);        /////////////////////////////////////////////////////////////
-
-                                                */
-
-    window.create(sf::VideoMode(32 * 30, 23 * 30 + 20), "Lode Runner");
+    window.create(sf::VideoMode(windowWidth * 30, windowHeight * 30 + 20), "Lode Runner");
     window.setPosition(sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - width) / 2), 0));
-    window.setSize(sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr));
-    window.setMouseCursorVisible(false);
-    window.setFramerateLimit(1000);
+    /*window.setSize(sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr));*/
+    window.setPosition(sf::Vector2i(800, 0));
+    window.setMouseCursorVisible(true);
+    window.setFramerateLimit(1500);
 }
 
 void Game::setIcon() {
@@ -1178,7 +1197,7 @@ void Game::updateMoveLR(sf::Time deltaTime) {
         sf::FloatRect spriteRect = sprite.getGlobalBounds();
         if (spriteRect.intersects(spriteBounds) && spriteRect.left == spriteLeft) {
             if ((movingLeft || movingRight) && spriteTop + 15 >= spriteRect.top - 15 && spriteTop + 15 <= spriteRect.top) {
-                if (movingLeft && sprite1.getPosition().x <= 15 + help || movingRight && sprite1.getPosition().x >= 32 * 30 - 15 - help) return;
+                if (movingLeft && sprite1.getPosition().x <= 15 + help || movingRight && sprite1.getPosition().x >= windowWidth * 30 - 15 - help) return;
                 for (const sf::Sprite& block : blocks) {
                     if ((block.getGlobalBounds().contains(spriteLeft - 0.01f, spriteTop + 15.0f) && movingLeft) ||
                         (block.getGlobalBounds().contains(spriteLeft + 30.01f, spriteTop + 15.0f) && movingRight))
@@ -1197,7 +1216,7 @@ void Game::updateMoveLR(sf::Time deltaTime) {
                 }
                 return;
             }
-            if (movingLeft && sprite1.getPosition().x <= 15 + help || movingRight && sprite1.getPosition().x >= 32 * 30 - 15 - help) return;
+            if (movingLeft && sprite1.getPosition().x <= 15 + help || movingRight && sprite1.getPosition().x >= windowWidth * 30 - 15 - help) return;
             if (spriteTop != spriteRect.top && spriteRect.contains(spriteLeft + 15, spriteTop + 15) && (movingRight || movingLeft)) {
                 for (const sf::Sprite& block : blocks) {
                     if ((block.getGlobalBounds().contains(spriteLeft - 0.01f, spriteTop + 15.0f) && movingLeft) ||
@@ -1232,7 +1251,7 @@ void Game::updateMoveLR(sf::Time deltaTime) {
     } else if (mod < 15) left -= mod;
 
     if (movingRight) {
-        if (sprite1.getPosition().x >= 32 * 30 - 15 - help || checkRight()) {
+        if (sprite1.getPosition().x >= windowWidth * 30 - 15 - help || checkRight()) {
 
             int workCounter = 0;
             for (sf::Sprite& sprite : spritesWorkout) {
@@ -1240,7 +1259,7 @@ void Game::updateMoveLR(sf::Time deltaTime) {
             }
             if (workCounter == spritesWorkout.size()) isWorkout = false;
 
-            if ((checkRight() || spriteLeft >= 23 * 32 - 30) && isWorkout == false && onUD == false) sprite1.setTexture(texture0);
+            if ((checkRight() || spriteLeft >= windowHeight * windowWidth - 30) && isWorkout == false && onUD == false) sprite1.setTexture(texture0);
             sprite1.setPosition(float(left) + 15, spriteTop + 15);
             return;
         }
@@ -1645,9 +1664,9 @@ void Game::updateEnemyDeath(Enemy& enemy) {
             enemy.changedDirectionCounter = 0;
             std::uniform_int_distribution<int> distribution;
             if (randEnemySpawnNums.empty() == false)
-                enemy.sprite1.setPosition(randEnemySpawnNums.at(distribution(generator) % randEnemySpawnNums.size()) * 30.0f + 15.0f, 15.0f);
+                enemy.sprite1.setPosition(randEnemySpawnNums.at(distribution(generator) % randEnemySpawnNums.size()) * 30.0f + 15.0f, 15.0f - help);
             else if (randLadderEnemySpawn.empty() == false)
-                enemy.sprite1.setPosition(randLadderEnemySpawn.at(distribution(generator) % randLadderEnemySpawn.size()) * 30.0f + 15.0f, 15.0f);
+                enemy.sprite1.setPosition(randLadderEnemySpawn.at(distribution(generator) % randLadderEnemySpawn.size()) * 30.0f + 15.0f, 15.0f - help);
             else
                 enemy.sprite1.setPosition(-30.0f, 0.0f);
             return;
@@ -1854,7 +1873,8 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
             return true;
         }
         if (uSide.getGlobalBounds().intersects(sprBounds) && enemy.isCaught) return true;
-        if ((lSide.getGlobalBounds().intersects(sprBounds) || rSide.getGlobalBounds().intersects(sprBounds))
+        if ((lSide.getGlobalBounds().intersects(sprBounds) && enemy.caughtDirection == -1 ||
+            rSide.getGlobalBounds().intersects(sprBounds) && enemy.caughtDirection == 1)
             && enemy.isClimbed) {
             enemy.isClimbed = false;
             return true;
@@ -1913,6 +1933,8 @@ bool Game::updateOnEnemy(sf::Time deltaTime) {
         float enemyLeft = enemyBounds.left;
         float enemyTop = enemyBounds.top;
 
+        if (enemyLeft != spriteLeft && isFromFly) return false;
+
         sf::RectangleShape etop(sf::Vector2f(30.0f, 2 * help));
         etop.setPosition(enemyLeft, enemyTop);
 
@@ -1926,6 +1948,7 @@ bool Game::updateOnEnemy(sf::Time deltaTime) {
 
             if ((int)spriteTop % 30 == 0 && enemy.isCaught == true) {
                 updateMoveLR(deltaTime);
+                if (isFromFly) sprite1.setTexture(texture13);
                 return true;
             }
 
@@ -1940,14 +1963,13 @@ bool Game::updateOnEnemy(sf::Time deltaTime) {
                 }
             }
             for (Enemy& enemy : enemies) {
-                if (enemyBounds.intersects(enemyUnder.getGlobalBounds(), area) && area.height == help) {
+                if (enemy.sprite1.getGlobalBounds().intersects(enemyUnder.getGlobalBounds(), area) && area.height == help) {
                     isEnemyOnPlatform = true;
                     break;
                 }
             }
 
             if (isEnemyOnPlatform == false) {
-
                 sf::RectangleShape lSide(sf::Vector2f(help, 30.0f - 2 * help)), rSide(sf::Vector2f(help, 30.0f - 2 * help));
                 lSide.setPosition(spriteLeft - help, spriteTop + help);
                 rSide.setPosition(spriteLeft + 30.0f, spriteTop + help);
@@ -2031,81 +2053,151 @@ bool Game::checkR() {
     return false;
 }
 
+bool Game::isEnemyFlying(sf::Sprite& enemy) {
+    sf::FloatRect enemyBounds = enemy.getGlobalBounds();
+    sf::RectangleShape under(sf::Vector2f(30.0f, help));
+    under.setPosition(enemyBounds.left, enemyBounds.top + 30.0f);
+    for (sf::Sprite& ladder : spritesUD) {
+        if (enemyBounds.intersects(ladder.getGlobalBounds())) return false;
+    }
+    for (sf::Sprite& work : spritesWorkout) {
+        if (enemyBounds.intersects(work.getGlobalBounds()) && enemyBounds.top == work.getGlobalBounds().top) return false;
+    }
+    for (sf::Sprite& platform : forFly) {
+        sf::FloatRect platformBounds = platform.getGlobalBounds();
+        if (under.getGlobalBounds().intersects(platformBounds) && !enemyBounds.intersects(platformBounds)) return false;
+    }
+    for (Enemy& esprite : enemies) {
+        if (esprite.isCaught && esprite.isFlyingTexture && under.getGlobalBounds().intersects(esprite.sprite1.getGlobalBounds())) return false;
+    }
+    return true;
+}
+
+bool Game::isEnableEnemyRight(Enemy& enemy) {
+    if (isEnemyFlying(enemy.sprite1) == true) return false;
+
+    sf::RectangleShape rSide(sf::Vector2f(help, 30.0f - 2 * help));
+    sf::FloatRect enemyBounds = enemy.sprite1.getGlobalBounds();
+    rSide.setPosition(enemyBounds.left + 30.0f, enemyBounds.top + help);
+    for (sf::Sprite& block : blocks) {
+        if (rSide.getGlobalBounds().intersects(block.getGlobalBounds())) return false;
+    }
+    for (Enemy& esprite : enemies) {
+        if (rSide.getGlobalBounds().intersects(esprite.sprite1.getGlobalBounds())) return false;
+    }
+
+    return true;
+}
+
+bool Game::isEnableEnemyLeft(Enemy& enemy) {
+    if (isEnemyFlying(enemy.sprite1) == true) return false;
+
+    sf::RectangleShape lSide(sf::Vector2f(help, 30.0f - 2 * help));
+    sf::FloatRect enemyBounds = enemy.sprite1.getGlobalBounds();
+    lSide.setPosition(enemyBounds.left - help, enemyBounds.top + help);
+    for (sf::Sprite& block : blocks) {
+        if (lSide.getGlobalBounds().intersects(block.getGlobalBounds())) return false;
+    }
+    for (Enemy& esprite : enemies) {
+        if (lSide.getGlobalBounds().intersects(esprite.sprite1.getGlobalBounds())) return false;
+    }
+
+    return true;
+}
+
+bool Game::isEnableEnemyUp(Enemy& enemy) {
+    if (isEnemyFlying(enemy.sprite1) == true) return false;
+
+    sf::FloatRect enemyBounds = enemy.sprite1.getGlobalBounds();
+    if (enemyBounds.top <= 0) return false;
+    sf::RectangleShape uSide(sf::Vector2f(30.0f - 2 * help, help));
+    uSide.setPosition(enemyBounds.left + help, enemyBounds.top - help);
+    
+    int counter = 0;
+    sf::FloatRect intersection;
+    for (sf::Sprite& ladder : spritesUD) {
+        if (enemyBounds.intersects(ladder.getGlobalBounds(), intersection) && intersection.width > 15.0f) {
+            counter++;
+            break;
+        }
+    }
+    if (counter == 0) return false;
+    for (sf::Sprite& block : blocks) {
+        if (uSide.getGlobalBounds().intersects(block.getGlobalBounds())) return false;
+    }
+    for (Enemy& esprite : enemies) {
+        if (uSide.getGlobalBounds().intersects(esprite.sprite1.getGlobalBounds())) return false;
+    }
+
+    return true;
+}
+
+bool Game::isEnableEnemyDown(Enemy& enemy) {
+    if (isEnemyFlying(enemy.sprite1) == true) return false;
+
+    sf::FloatRect enemyBounds = enemy.sprite1.getGlobalBounds();
+    sf::RectangleShape dSide(sf::Vector2f(30.0f - 2 * help, help));
+    dSide.setPosition(enemyBounds.left + help, enemyBounds.top + 30.0f);
+
+    bool isWorking = false;
+    for (sf::Sprite& work : spritesWorkout) {
+        if (enemyBounds.intersects(work.getGlobalBounds()) && work.getGlobalBounds().top == enemyBounds.top) {
+            isWorking = true;
+            break;
+        }
+    }
+
+    for (sf::Sprite& block : blocks) {
+        if (dSide.getGlobalBounds().intersects(block.getGlobalBounds())) return false;
+    }
+    for (Enemy& esprite : enemies) {
+        if (dSide.getGlobalBounds().intersects(esprite.sprite1.getGlobalBounds())) return false;
+    }
+
+    if (isWorking) return true;
+
+    sf::FloatRect intersection;
+    for (sf::Sprite& ladder : spritesUD) {
+        if (dSide.getGlobalBounds().intersects(ladder.getGlobalBounds(), intersection) && intersection.width > 15.0f) return true;
+    }
+
+    int counter = 0;
+    for (sf::Sprite& ladder : spritesUD) {
+        if (enemyBounds.intersects(ladder.getGlobalBounds(), intersection) && intersection.width > 15.0f) {
+            counter++;
+            break;
+        }
+    }
+    if (counter == 0) return false;
+
+    return true;
+}
+
 void Game::setEnemyMove(Enemy& enemy) {
 
+    if (enemy.isCaught || enemy.isClimbed) return;
+
+    sf::FloatRect enemyBounds = enemy.sprite1.getGlobalBounds();
     sf::FloatRect spriteBounds = sprite1.getGlobalBounds();
-    float spriteLeft = spriteBounds.left;
-    float spriteTop = spriteBounds.top;
 
-    sf::RectangleShape helpArea(sf::Vector2f(90.0f, 90.0f));
-    helpArea.setOrigin(helpArea.getLocalBounds().width / 2, helpArea.getLocalBounds().height / 2);
-    helpArea.setPosition(spriteLeft + 15, spriteTop + 15);
+    //enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp; enemy.movingDown = movingDown;
 
-
-    sf::RectangleShape lSide(sf::Vector2f(30.0f, help)), rSide(sf::Vector2f(30.0f, help));
-    lSide.setPosition(enemy.sprite1.getGlobalBounds().left - help, enemy.sprite1.getGlobalBounds().top);
-    rSide.setPosition(enemy.sprite1.getGlobalBounds().left + 30.0f, enemy.sprite1.getGlobalBounds().top);
-    
-    if (enemy.sprite1.getGlobalBounds().left < sprite1.getGlobalBounds().left) {
-        if (enemy.direction == -1) {
-            enemy.isDirectionChanged = true;
-        }
+    if (spriteBounds.top > enemyBounds.top + help && isEnableEnemyDown(enemy)) {
+        enemy.movingDown = true;
+        return;
+    } else if (spriteBounds.top < enemyBounds.top - help && isEnableEnemyUp(enemy)) {
+        enemy.movingUp = true;
+        return;
+    } else if (spriteBounds.left > enemyBounds.left + help && isEnableEnemyRight(enemy)) {
         enemy.movingRight = true;
-        enemy.direction = 1;
-        
-    }
-        
-    if (enemy.sprite1.getGlobalBounds().left > sprite1.getGlobalBounds().left) {
+        return;
+    } else if (spriteBounds.left < enemyBounds.left - help && isEnableEnemyLeft(enemy)) {
         enemy.movingLeft = true;
-        enemy.direction = -1;
-        
+        return;
     }
 
-    /*sf::RectangleShape rect(sf::Vector2f(30.0f, help));
-    rect.setPosition(enemy.sprite1.getGlobalBounds().left, enemy.sprite1.getGlobalBounds().top + 30.0f);
+    
 
-    for (sf::Sprite& sprite : spritesUD) {
-        if (!helpArea.getGlobalBounds().intersects(sprite.getGlobalBounds())) continue;
-        sf::FloatRect intersection;
-        bool isUnderBlock = false;
-        for (sf::Sprite& block : blocks) {
-            if (block.getGlobalBounds().contains(sprite.getGlobalBounds().left + 15.0f, sprite.getGlobalBounds().top + 45.0f)) {
-                isUnderBlock = true;
-                break;
-            }
-        }
-        if ((enemy.sprite1.getGlobalBounds().intersects(sprite.getGlobalBounds(), intersection) && intersection.width >= 25 && isUnderBlock == false)
-            || rect.getGlobalBounds().intersects(sprite.getGlobalBounds(), intersection) && intersection.width >= 25) {
-            enemy.movingLeft = false;
-            enemy.movingRight = false;
-            if (enemy.sprite1.getGlobalBounds().top > sprite1.getGlobalBounds().top) {
-                enemy.movingUp = true;
-            } else {
-                enemy.movingDown = true;
-            }
-            break;
-        } 
-    }
-
-    for (sf::Sprite& work : spritesWorkout) {
-        if (!helpArea.getGlobalBounds().intersects(work.getGlobalBounds())) continue;
-        if (enemy.sprite1.getGlobalBounds().intersects(work.getGlobalBounds()) && enemy.sprite1.getGlobalBounds().top == work.getGlobalBounds().top
-            && enemy.sprite1.getGlobalBounds().top != sprite1.getGlobalBounds().top) {
-            if (enemy.sprite1.getGlobalBounds().top > sprite1.getGlobalBounds().top) {
-                enemy.movingUp = true;
-            } else {
-                enemy.movingDown = true;
-            }
-        }
-    }*/
-
-
-
-
-
-    // enemy.movingDown = movingDown; enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp;
-
-     if (enemy.sprite1.getGlobalBounds().top <= 0) enemy.movingUp = false;
 }
 
 
