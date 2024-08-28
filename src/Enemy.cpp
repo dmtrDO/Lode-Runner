@@ -756,8 +756,11 @@ void Enemy::initVariables() {
 	tempIgnore = false;
 	windowWidth = 36;
 	windowHeight = 20;
-	direction = 1;
-	isFlyingTexture = false;
+	direction = 0;
+	ladderDirection = 0;
+	isLadderDirectionChanged = false;
+	isDirectionChanged = false;
+	isFlyingTexture = true;
 	pickedGoldTime = 0;
 	onGold = false;
 	isPickedGold = false;
@@ -766,7 +769,7 @@ void Enemy::initVariables() {
 	hole.setPosition(-100.0f, -100.0f);
 	isCaught = false;
 	isClimbed = false;
-	isFromFly = false;
+	isFromFly = true;
 	space = false;
 	onUD = false;
 	isWorkout = false;
@@ -780,7 +783,7 @@ void Enemy::initVariables() {
 	movingLeft = false;
 	movingRight = false;
 	movingUp = false;
-	mainSpeed = 70.0f;
+	mainSpeed = 80.0f;
 	animationMoveIntervalLR = 45.0f;
 	animationMoveIntervalUD = 28.0f;
 	animationMoveIntervalWorkout = 42.0f;

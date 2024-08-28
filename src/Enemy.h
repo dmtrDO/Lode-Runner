@@ -20,6 +20,8 @@ public:
 
 	int direction;
 	bool isDirectionChanged;
+	int ladderDirection;
+	bool isLadderDirectionChanged;
 
 	bool movingLeft;
 	bool movingRight;
