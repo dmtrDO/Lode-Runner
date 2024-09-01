@@ -25,17 +25,17 @@ void Game::handle() {
                 break;
             case sf::Event::KeyPressed:
                 if (key == sf::Keyboard::Key::Escape || key == sf::Keyboard::Key::F2) isRestart = true;
-                if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D) movingRight = true;
-                if (key == sf::Keyboard::Key::Left || key == sf::Keyboard::Key::A) movingLeft = true;
-                if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W) movingUp = true;
-                if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S) movingDown = true;
+                if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D || key == sf::Keyboard::Key::Numpad6) movingRight = true;
+                if (key == sf::Keyboard::Key::Left || key == sf::Keyboard::Key::A || key == sf::Keyboard::Key::Numpad4) movingLeft = true;
+                if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W || key == sf::Keyboard::Key::Numpad8) movingUp = true;
+                if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S || key == sf::Keyboard::Key::Numpad2) movingDown = true;
                 if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter || key == sf::Keyboard::Key::LShift) space = true;
                 break;
             case sf::Event::KeyReleased:
-                if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D) movingRight = false;
-                if (key == sf::Keyboard::Key::Left || key == sf::Keyboard::Key::A) movingLeft = false;
-                if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W) movingUp = false;
-                if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S) movingDown = false;
+                if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D || key == sf::Keyboard::Key::Numpad6) movingRight = false;
+                if (key == sf::Keyboard::Key::Left || key == sf::Keyboard::Key::A || key == sf::Keyboard::Key::Numpad4) movingLeft = false;
+                if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W || key == sf::Keyboard::Key::Numpad8) movingUp = false;
+                if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S || key == sf::Keyboard::Key::Numpad2) movingDown = false;
                 if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter || key == sf::Keyboard::Key::LShift) space = false;
                 break;
         }
@@ -59,10 +59,10 @@ void Game::update() {
         fps = 100;
     }
     updateDeath();
-    
+
     if (sprite1.getGlobalBounds().top + 30 <= 0) { isWin = true; return; }
     if (isRestart || isWin) return;
-    
+
     if (window.hasFocus()) animateDeleted();
     if (!isVictory) updateGold();
 
@@ -189,7 +189,7 @@ bool Game::updateHelp(sf::Time& deltaTime) {
         }
 
         if (rectdownBounds.intersects(sprBounds) && movingUp
-            && rectdownLeft >= sprLeft - hlp 
+            && rectdownLeft >= sprLeft - hlp
             && rectdownLeft <= sprLeft + hlp) {
             for (sf::Sprite& block : blocks) {
                 if (block.getGlobalBounds().contains(sprLeft + 15.0f, sprTop - 15.0f)) return false;
@@ -673,7 +673,7 @@ bool Game::updateFly() {
     for (sf::Sprite& sp : spritesWorkout) {
 
         sf::FloatRect spBounds = sp.getGlobalBounds();
-         
+
         if (!spBounds.intersects(helpBounds)) continue;
 
         sf::FloatRect area;
@@ -771,8 +771,8 @@ bool Game::updateFly() {
                 int floorCounter = 0;
                 sf::FloatRect floorArea;
                 for (sf::Sprite& spr : forFly) {
-                    if (!rectBounds.intersects(spr.getGlobalBounds()) 
-                        || (rectBounds.intersects(spr.getGlobalBounds(), floorArea) && floorArea.width < 2 * help )) floorCounter++;
+                    if (!rectBounds.intersects(spr.getGlobalBounds())
+                        || (rectBounds.intersects(spr.getGlobalBounds(), floorArea) && floorArea.width < 2 * help)) floorCounter++;
                 }
                 if (floorCounter == forFly.size()) {
                     int ladCounter = 0;
@@ -888,7 +888,7 @@ bool Game::updateFly() {
         if (!rectBounds.intersects(sprite.getGlobalBounds())) tmpCounter++;
     }
     if (tmpCounter == forFly.size()) {
-        
+
         int md = (int)spriteLeft % 30;
         if (md >= 15) md = 30 - md;
         if (md <= help) {
@@ -1074,7 +1074,7 @@ void Game::initVariables() {
     windowWidth = 36;
     windowHeight = 20;
     generator.seed(static_cast<unsigned int>(std::time(nullptr)));
-    enemyPercent = 10;
+    enemyPercent = 2;
     mainPosition = sf::Vector2f(-200.0f, 0);
     flickTime = 0.4f;
     isStart = false;
@@ -1178,10 +1178,10 @@ void Game::setWindow() {
 
     window.create(sf::VideoMode(windowWidth * 30, windowHeight * 30 + 20), "Lode Runner");
     window.setPosition(sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - width) / 2), 0));
-   // window.setSize(sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr));
-    window.setPosition(sf::Vector2i(800, 0));
+    window.setSize(sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr));
+    //window.setPosition(sf::Vector2i(800, 0));
     window.setMouseCursorVisible(true);
-    //window.setFramerateLimit(150);
+    window.setFramerateLimit(150);
 }
 
 void Game::setIcon() {
@@ -1278,7 +1278,7 @@ void Game::updateMoveLR(sf::Time deltaTime) {
 
     if (movingLeft) {
         if (sprite1.getPosition().x <= 15 + help || checkLeft()) {
-            
+
             int workCounter = 0;
             for (sf::Sprite& sprite : spritesWorkout) {
                 if (!spriteBounds.intersects(sprite.getGlobalBounds())) workCounter++;
@@ -1755,7 +1755,7 @@ void Game::updateEnemyPickGold(Enemy& enemy) {
                 enemy.onGold = true;
                 std::uniform_int_distribution<int> distribution;
                 int fortunate = distribution(generator) % enemyPercent;
-                if (fortunate == 0 && enemy.pickUpInterval.getElapsedTime().asSeconds() > 10.0f) {
+                if (fortunate == 0 && enemy.pickUpInterval.getElapsedTime().asSeconds() > 2.0f) {
                     for (sf::Sprite& sprite : levelSprites) {
                         if (sprite.getGlobalBounds().getPosition() == gold.getGlobalBounds().getPosition()) {
                             sprite.setPosition(sprite.getGlobalBounds().left, sprite.getGlobalBounds().top - 2000.0f);
@@ -1788,7 +1788,8 @@ void Game::updateEnemyPickGold(Enemy& enemy) {
                 for (sf::Sprite& spr : holes) { if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; } }
                 for (sf::Sprite& spr : spritesWorkout) { if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; } }
                 for (sf::Sprite& spr : spritesUD) {
-                    if (sf::Vector2(spr.getGlobalBounds().left, spr.getGlobalBounds().top + 2000.0f) == sf::Vector2f(left, top)) { checkUp = true; break; }
+                    //if (sf::Vector2(spr.getGlobalBounds().left, spr.getGlobalBounds().top + 2000.0f) == sf::Vector2f(left, top)) { checkUp = true; break; }
+                    if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; }
                 }
                 if (checkUp == false) {
                     for (sf::Sprite& gold : levelSprites) {
@@ -1878,7 +1879,9 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
             enemy.isFlyingTexture = true;
             return true;
         }
-        if (dSide.getGlobalBounds().intersects(sprBounds) && sprite.isCaught == true) {
+
+        if (dSide.getGlobalBounds().intersects(sprBounds) && sprite.isCaught == true || 
+            dSide.getGlobalBounds().intersects(sprBounds) && sprite.isCaught == false && enemy.isFlyingTexture == false) {
             if (enemyTop != sprBounds.top - 30.0f)
                 enemy.sprite1.setPosition(enemyLeft + 15.0f, sprBounds.top - 30.0f + 15.0f);
             if (enemy.updateCaught(deltaTime, sprite1)) return true;
@@ -2040,8 +2043,8 @@ bool Game::updateOnEnemy(sf::Time deltaTime) {
                     if (movingRight) sprite1.setPosition(spriteLeft + 15.0f + help + 0.1f, spriteTop + 15.0f);
                 }
 
-               if ((int)spriteTop % 30 == 0) updateMoveLR(deltaTime);
-               if (isFromFly) sprite1.setTexture(texture13);
+                if ((int)spriteTop % 30 == 0) updateMoveLR(deltaTime);
+                if (isFromFly) sprite1.setTexture(texture13);
 
             }
 
@@ -2138,7 +2141,7 @@ bool Game::isEnableEnemyUp(Enemy& enemy) {
     if (enemyBounds.top <= 0) return false;
     sf::RectangleShape uSide(sf::Vector2f(30.0f - 2 * help, help));
     uSide.setPosition(enemyBounds.left + help, enemyBounds.top - help);
-    
+
     int counter = 0;
     sf::FloatRect intersection;
     for (sf::Sprite& ladder : spritesUD) {
@@ -2206,9 +2209,7 @@ void Game::setEnemyMove(Enemy& enemy) {
 
     if (enemy.isCaught || enemy.isClimbed || isEnemyFlying(enemy.sprite1) || (enemyBounds.left == spriteBounds.left && enemy.isFlyingTexture)) {
         enemy.isDirectionChanged = false;
-        enemy.isLadderDirectionChanged = false;
         enemy.direction = 0;
-        enemy.ladderDirection = 0;
         return;
     }
 
@@ -2228,32 +2229,33 @@ void Game::setEnemyMove(Enemy& enemy) {
 
     } else if (spriteBounds.left > enemyBounds.left + help && isEnableEnemyRight(enemy) && enemy.isDirectionChanged == false) {
         enemy.movingRight = true;
-        enemy.isLadderDirectionChanged = false;
         enemy.direction = 1;
         return;
 
     } else if (spriteBounds.left < enemyBounds.left - help && isEnableEnemyLeft(enemy) && enemy.isDirectionChanged == false) {
         enemy.movingLeft = true;
-        enemy.isLadderDirectionChanged = false;
         enemy.direction = -1;
         return;
 
     } else {
 
+
+
         if (enemy.isDirectionChanged == false) {
             if (enemy.direction == 1) {
                 enemy.direction = -1;
                 enemy.movingLeft = true;
+                enemy.isDirectionChanged = true;
             } else if (enemy.direction == -1) {
                 enemy.direction = 1;
                 enemy.movingRight = true;
+                enemy.isDirectionChanged = true;
             }
-            enemy.isDirectionChanged = true;
         } else {
             if (enemy.direction == 1) {
                 enemy.movingRight = true;
                 if (isEnableEnemyRight(enemy) == false) enemy.isDirectionChanged = false;
-            } else {
+            } else if (enemy.direction == -1) {
                 enemy.movingLeft = true;
                 if (isEnableEnemyLeft(enemy) == false) enemy.isDirectionChanged = false;
             }
@@ -2261,7 +2263,7 @@ void Game::setEnemyMove(Enemy& enemy) {
 
     }
 
-    
+
 
 }
 
