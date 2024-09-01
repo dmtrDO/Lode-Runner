@@ -1080,8 +1080,8 @@ void Game::initVariables() {
     isStart = false;
     screenFade.setTexture(texture20);
     screenFade.setScale(windowWidth, windowHeight - 1);
-    transitionSpeed = 5;
-    opacity = 5;
+    transitionSpeed = 1;
+    opacity = 1;
     isDrawnFade = false;
     isWin = false;
     isRestart = false;
@@ -1181,7 +1181,7 @@ void Game::setWindow() {
     window.setSize(sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr));
     //window.setPosition(sf::Vector2i(800, 0));
     window.setMouseCursorVisible(true);
-   // window.setFramerateLimit(150);
+    window.setFramerateLimit(400);
 }
 
 void Game::setIcon() {
