@@ -1181,7 +1181,7 @@ void Game::setWindow() {
     window.setSize(sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr));
     //window.setPosition(sf::Vector2i(800, 0));
     window.setMouseCursorVisible(true);
-    window.setFramerateLimit(150);
+   // window.setFramerateLimit(150);
 }
 
 void Game::setIcon() {
