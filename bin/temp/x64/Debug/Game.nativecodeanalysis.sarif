@@ -1,0 +1,529 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'sf::Glyph::lsbDelta' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/dmytr/Desktop/main/MyProjects/Lode Runner/lib/SFML-2.6.0/include/SFML/Graphics/Glyph.hpp"
+                },
+                "region": {
+                  "startLine": 49,
+                  "startColumn": 5
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "sf::Glyph::{ctor}",
+                  "decoratedName": "??0Glyph@sf@@QEAA@XZ",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "sf::Glyph::lsbDelta"
+          }
+        },
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'sf::Glyph::rsbDelta' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/Users/dmytr/Desktop/main/MyProjects/Lode Runner/lib/SFML-2.6.0/include/SFML/Graphics/Glyph.hpp"
+                },
+                "region": {
+                  "startLine": 49,
+                  "startColumn": 5
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "sf::Glyph::{ctor}",
+                  "decoratedName": "??0Glyph@sf@@QEAA@XZ",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "sf::Glyph::rsbDelta"
+          }
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.40.33813.0",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///C:/Users/dmytr/Desktop/main/MyProjects/Lode Runner/lib/SFML-2.6.0/include/SFML/Graphics/Glyph.hpp"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "204c0976cdcca305a0d5f0b0c9916d5846f072515752301ff1264f075dac5e4a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/src/game.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "0741c7d052e7fc9b65e40adc40d085e6f77f36c4e99c48e600efe0dc0eb13d81"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/src/game.h"
+          },
+          "hashes": {
+            "sha-256": "bd8f5703f1747cf64efb0a53e5ccb8045c434361e1b2f434253008bcc35e89e4"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/event.hpp"
+          },
+          "hashes": {
+            "sha-256": "3879db9003694f3b67e51508d8d148592796333f1536d2ba77315c9117be0f12"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/config.hpp"
+          },
+          "hashes": {
+            "sha-256": "42b239ec7d0aef0cb572799739b81cb0d1a2e32e258d7d52f29a41110ae3a652"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/joystick.hpp"
+          },
+          "hashes": {
+            "sha-256": "bc941fc61270d7131eb864733802cf6f6e33e04ceefebe0e889db7b57b145644"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/export.hpp"
+          },
+          "hashes": {
+            "sha-256": "56d91b0cc853f33de48b0214fd56b94e613470cdfc63ebf2f796e3e1ce0b5942"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/system/string.hpp"
+          },
+          "hashes": {
+            "sha-256": "a685d0bfd92514710d62312a83deb8a51112f4a550d94012ce31d2e9c0ed358e"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/system/export.hpp"
+          },
+          "hashes": {
+            "sha-256": "147108e8e714dda70bbede4be3aa9d93507f482d9889b9fca65f7bfca971be5c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/system/utf.hpp"
+          },
+          "hashes": {
+            "sha-256": "8c7817ffe67b4bf73e4d279dca6fe138f606aef01030054f104e6c466ca57621"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/system/utf.inl"
+          },
+          "hashes": {
+            "sha-256": "bfa4ee2cfd7a04465ca347ec175542dab2e4afb9301ba10b78a66c2c7eafa5b6"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/system/string.inl"
+          },
+          "hashes": {
+            "sha-256": "98cc8db155233c2629bf8a89b31ba7c08e44683919ed97134201f76ed474d4d4"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/keyboard.hpp"
+          },
+          "hashes": {
+            "sha-256": "36ce440f7398ebfd8ad88e5380af20feba7fdf592acbcefb7cd9c273f5fb1c47"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/mouse.hpp"
+          },
+          "hashes": {
+            "sha-256": "45d521e627755c4016cf9563abbe5a4aaf73cf720322d556f32047467e976911"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/system/vector2.hpp"
+          },
+          "hashes": {
+            "sha-256": "6b6ce9c482717b90e608ea2fd78db9c147e7125c2dc5e596e300f55d4833933e"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/system/vector2.inl"
+          },
+          "hashes": {
+            "sha-256": "587f6a8a57096811dd2fc595211246502785f8fbecefea69412081ea260f9c96"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/sensor.hpp"
+          },
+          "hashes": {
+            "sha-256": "b66cb9233813077c6d35f628c994854e010ee32b4d2214718d3610559ff3aac7"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/system/vector3.hpp"
+          },
+          "hashes": {
+            "sha-256": "51e8f01ccafbfbd4b62f4c0ac9147d2f15fcf639ce191ff7b8edd18d73f847b9"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/system/vector3.inl"
+          },
+          "hashes": {
+            "sha-256": "d7212f6f492d012653df7b53fe9a13c753a4d61bd5adb3bf89db328ea9cf45d2"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/system/time.hpp"
+          },
+          "hashes": {
+            "sha-256": "0ed6b91c7988847c1b02b7d00a85bcaa216b290c5f44807770bf466353ae77c6"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/text.hpp"
+          },
+          "hashes": {
+            "sha-256": "23e6e2058cbaf338100870e81333c14be39bb300c3ca23912199bc58f984e5ea"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/export.hpp"
+          },
+          "hashes": {
+            "sha-256": "429b2849616c6c5b32840dae23d0716d9e91069127e8d84f46860d6ba93cf686"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/drawable.hpp"
+          },
+          "hashes": {
+            "sha-256": "6193525d4bcd3746cd67109f407b169e49226496f112a0a4f86c45f1e8ff4e5d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/renderstates.hpp"
+          },
+          "hashes": {
+            "sha-256": "a7f4a0a2fa4b522ea1070fe70b3fa55c1749a7ce7efc45bddaa832cf2217fc5d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/blendmode.hpp"
+          },
+          "hashes": {
+            "sha-256": "8a54d79c01eb30a9efb52b9494d17b5098b57e9b97d6fa3e13cd629bde382543"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/transform.hpp"
+          },
+          "hashes": {
+            "sha-256": "7f49821a1e4cf52737bd3a4d9ff6a352ed4e465b7ae8b67d23779a90c24b093b"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/rect.hpp"
+          },
+          "hashes": {
+            "sha-256": "be5ad06e09bd78800b821af03c71cb0a8a85d0ed2e6f1fb4c743c950634a006f"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/rect.inl"
+          },
+          "hashes": {
+            "sha-256": "6173c80c5bd1a3f038a034fd2aeecc0200beba23c0cafcd074dc94c69330d2f7"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/transformable.hpp"
+          },
+          "hashes": {
+            "sha-256": "5b44678466f9016944b0a47e827dc2cd70857094da987d4b40d01c196cb4b0d2"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/font.hpp"
+          },
+          "hashes": {
+            "sha-256": "e043b71d0f9c1d1c568d1d0348ddef3c541f9fafb18e1795c5c177bb14cc574c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/texture.hpp"
+          },
+          "hashes": {
+            "sha-256": "4c00881579ef7e231d1d076ca5655e59aab29a135e95c3171b3f2d107d3e760a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/image.hpp"
+          },
+          "hashes": {
+            "sha-256": "06412d255f1535f08dcd4da588b870438535ffcde4c76f134f5d1132862ec588"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/color.hpp"
+          },
+          "hashes": {
+            "sha-256": "30ed4035037f30b510220a9a54348bcd7f005299fc3da90b68639168f942b8fb"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/glresource.hpp"
+          },
+          "hashes": {
+            "sha-256": "230d28105f0991222e4f2f38c605fe1ce5ea50ee001759e188db1598252c6db2"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/system/noncopyable.hpp"
+          },
+          "hashes": {
+            "sha-256": "29afca51904c1b173d52b1368d632d4e420c54f4a35b957bd6c6aad1e4ff7c7a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/vertexarray.hpp"
+          },
+          "hashes": {
+            "sha-256": "1d1d2ad2e2b0b39ef1ed06c948b2319697fa87a3c3d27e861c0bc0155f9bd45d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/vertex.hpp"
+          },
+          "hashes": {
+            "sha-256": "21fcaffac539a545faf73cf2776325b9e43671a39c1ad1f89d0f8eb663a21deb"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/primitivetype.hpp"
+          },
+          "hashes": {
+            "sha-256": "d1cda268040aec69065fffdf852b81bfab5195c54d2736161cf0a391e35cf11f"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/sprite.hpp"
+          },
+          "hashes": {
+            "sha-256": "c10bb505265cc3492dad92ef904aacb561472f723ef49db0db59a1f17096e3dd"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/renderwindow.hpp"
+          },
+          "hashes": {
+            "sha-256": "113f9005aff54b6a12a461d53009bd9ad072ff97390eb00205b1d8de57be30d4"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/rendertarget.hpp"
+          },
+          "hashes": {
+            "sha-256": "0c28ae3609b922c946214d6d6d0054cf4ddca6836294a870ce0bb2f1af4aef98"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/view.hpp"
+          },
+          "hashes": {
+            "sha-256": "7743a5cddd170268458699b1c6082109f90294e5df12c5a695ddd5cf94375826"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/window.hpp"
+          },
+          "hashes": {
+            "sha-256": "6673ee7342af275c62306d668ecd5f69ad07e2569ff14ab5a04b7b14dfdecc90"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/contextsettings.hpp"
+          },
+          "hashes": {
+            "sha-256": "aca50dcdef5578d5017f904ababc14563980a868eca7cf61f40839baa1df6dd8"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/windowbase.hpp"
+          },
+          "hashes": {
+            "sha-256": "8db81fdeb779d387efeab2a784b48d7f1df5714435aaa63e0f9801598382e3ae"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/cursor.hpp"
+          },
+          "hashes": {
+            "sha-256": "57ddd3e95f5bc4b0b044651f6189b0cdd61d7ed0bbfbd47e43bb15b96691086a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/videomode.hpp"
+          },
+          "hashes": {
+            "sha-256": "8180f9b5184a76dcd0b9439279fd60da3a26b1ff11b8b13816b366f48e1e369a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/vulkan.hpp"
+          },
+          "hashes": {
+            "sha-256": "fd21b9a7654d8dc21098c710886813962ec9cff7d8291f2150e5aaca827841e8"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/windowhandle.hpp"
+          },
+          "hashes": {
+            "sha-256": "52fcf3d0e699dca76e5adbb6f81a6a1e0b5c3085945d1a0d81810e7ecbe6640c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/window/windowstyle.hpp"
+          },
+          "hashes": {
+            "sha-256": "e91d24eaa4481c2a6a067b7468ee288b7be2a2a58e7472d3f143ab8aecf0647e"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/system/clock.hpp"
+          },
+          "hashes": {
+            "sha-256": "99e8c3e8b72b9821b0bf530a766c6185a4b9bcb2ebd4f7f49f06c89ba0fa7c5e"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/rectangleshape.hpp"
+          },
+          "hashes": {
+            "sha-256": "cccf5ee6b665df8a0bd733ecc39db9386f0c8b1a4c864d67684018edcfd70836"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/lib/sfml-2.6.0/include/sfml/graphics/shape.hpp"
+          },
+          "hashes": {
+            "sha-256": "d1137f53e309bf733e70846e226a75e4ef3873adc48c251c3b50d7a04c966a05"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/src/font.h"
+          },
+          "hashes": {
+            "sha-256": "0dcef13a63ff577e1bfbf17f3eaf08c5a942e63071372fe1be321da5dbbc0010"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///c:/users/dmytr/desktop/main/myprojects/lode runner/src/images.h"
+          },
+          "hashes": {
+            "sha-256": "4a31dc91f859b7c63b41eeebdae9201b557c04ebea24ee51ac9df47163c47b2b"
+          }
+        }
+      ]
+    }
+  ]
+}

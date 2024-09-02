@@ -1182,7 +1182,7 @@ void Game::setWindow() {
     window.setMouseCursorVisible(false);
     window.setFramerateLimit(400);
 
-    sf::Mouse::setPosition(sf::Vector2i(window.getPosition().x + window.getSize().x - 80, 15));
+    
 }
 
 void Game::setIcon() {

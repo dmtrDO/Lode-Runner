@@ -19,12 +19,7 @@ mono_crash.*
 # Build results
 [Dd]ebugPublic/
 [Rr]eleases/
-x86/
-[Ww][Ii][Nn]32/
-[Aa][Rr][Mm]/
-[Aa][Rr][Mm]64/
 bld/
-[Bb]in/
 [Oo]bj/
 [Oo]ut/
 [Ll]og/
@@ -36,7 +31,6 @@ bld/
 #wwwroot/
 
 # Visual Studio 2017 auto generated files
-Generated\ Files/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
