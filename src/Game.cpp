@@ -1166,8 +1166,8 @@ void Game::initVariables() {
 
 void Game::setWindow() {
     window.create(sf::VideoMode(windowWidth * 30, windowHeight * 30 + 20), "Lode Runner");
-    window.setPosition(sf::Vector2i(0, 0));
-    window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height - 100));
+    window.setPosition(sf::Vector2i(-9, 0));
+    window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height - 85));
     sf::Mouse::setPosition(sf::Vector2i(0, sf::VideoMode::getDesktopMode().height + 15));
     window.setFramerateLimit(400);
 }
