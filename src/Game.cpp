@@ -851,8 +851,8 @@ bool Game::updateFly() {
                 }
                 if (counter == 0) {
                     for (sf::Sprite& sprite : forFly) {
-                        if (rectBounds.intersects(sprBounds)) {
-                            sprite1.setPosition(spriteLeft + 15, sprTop - 15);
+                        if (rectBounds.intersects(sprite.getGlobalBounds())) {
+                            sprite1.setPosition(spriteLeft + 15, sprite.getGlobalBounds().top - 15);
                             return false;
                         }
                     }
@@ -1179,9 +1179,10 @@ void Game::setWindow() {
     window.create(sf::VideoMode(windowWidth * 30, windowHeight * 30 + 20), "Lode Runner");
     window.setPosition(sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - width) / 2), 0));
     window.setSize(sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr));
-    //window.setPosition(sf::Vector2i(800, 0));
-    window.setMouseCursorVisible(true);
+    window.setMouseCursorVisible(false);
     window.setFramerateLimit(400);
+
+    sf::Mouse::setPosition(sf::Vector2i(window.getPosition().x + window.getSize().x - 80, 15));
 }
 
 void Game::setIcon() {
