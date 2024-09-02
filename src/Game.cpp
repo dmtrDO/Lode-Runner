@@ -1165,26 +1165,13 @@ void Game::initVariables() {
 }
 
 void Game::setWindow() {
-    int placeForExpr = 20;
-    unsigned int w = windowWidth * 30, h = windowHeight * 30;
-    sf::VideoMode bestMode;
-    for (sf::VideoMode mode : sf::VideoMode::getFullscreenModes()) {
-        if (mode.height >= sf::VideoMode::getDesktopMode().height - 2 * placeForExpr) continue;
-        bestMode = mode;
-        break;
-    }
-    double k = static_cast<double>(bestMode.height) / static_cast<double>(h);
-    double width = k * static_cast<double>(w);
-
     window.create(sf::VideoMode(windowWidth * 30, windowHeight * 30 + 20), "Lode Runner");
-    window.setPosition(sf::Vector2i(static_cast<int>((sf::VideoMode::getDesktopMode().width - width) / 2), 0));
-    window.setSize(sf::Vector2u(static_cast<unsigned int>(width), bestMode.height + placeForExpr));
-    window.setMouseCursorVisible(false);
+    window.setPosition(sf::Vector2i(0, 0));
+    window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height - 100));
+    sf::Mouse::setPosition(sf::Vector2i(0, sf::VideoMode::getDesktopMode().height + 15));
     window.setFramerateLimit(400);
-
-    
 }
-
+    
 void Game::setIcon() {
     sf::Image windowIcon = texture52.copyToImage();
     window.setIcon(windowIcon.getSize().x, windowIcon.getSize().y, windowIcon.getPixelsPtr());
