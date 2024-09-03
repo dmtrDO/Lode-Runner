@@ -154,6 +154,8 @@ private:
 	sf::Text text;
 	void setText(int level);
 
+	bool isPause;
+
 	std::vector<sf::Sprite> victoryUD;
 	std::vector<sf::Sprite> goldSprites;
 	bool isVictory;

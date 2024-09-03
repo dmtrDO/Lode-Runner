@@ -19,24 +19,32 @@ void Game::handle() {
     sf::Event event;
     while (window.pollEvent(event)) {
         sf::Keyboard::Key key = event.key.code;
+        if (isPause == false && key == sf::Keyboard::Key::Escape) {
+            isPause = true;
+            return;
+        }
+        if (isPause == true && key == sf::Keyboard::Key::Escape) {
+            isPause = false;
+            deltaTimeClock.restart();
+        }
         switch (event.type) {
             case sf::Event::Closed:
                 window.close();
                 break;
             case sf::Event::KeyPressed:
-                if (key == sf::Keyboard::Key::Escape || key == sf::Keyboard::Key::F2) isRestart = true;
+                if (key == sf::Keyboard::Key::F2) isRestart = true;
                 if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D || key == sf::Keyboard::Key::Numpad6) movingRight = true;
                 if (key == sf::Keyboard::Key::Left || key == sf::Keyboard::Key::A || key == sf::Keyboard::Key::Numpad4) movingLeft = true;
                 if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W || key == sf::Keyboard::Key::Numpad8) movingUp = true;
-                if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S || key == sf::Keyboard::Key::Numpad2) movingDown = true;
-                if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter || key == sf::Keyboard::Key::LShift) space = true;
+                if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S || key == sf::Keyboard::Key::Numpad5) movingDown = true;
+                if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::LShift) space = true;
                 break;
             case sf::Event::KeyReleased:
                 if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D || key == sf::Keyboard::Key::Numpad6) movingRight = false;
                 if (key == sf::Keyboard::Key::Left || key == sf::Keyboard::Key::A || key == sf::Keyboard::Key::Numpad4) movingLeft = false;
                 if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W || key == sf::Keyboard::Key::Numpad8) movingUp = false;
-                if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S || key == sf::Keyboard::Key::Numpad2) movingDown = false;
-                if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::Enter || key == sf::Keyboard::Key::LShift) space = false;
+                if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S || key == sf::Keyboard::Key::Numpad5) movingDown = false;
+                if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::LShift) space = false;
                 break;
         }
     }
@@ -47,6 +55,8 @@ void Game::handle() {
 }
 
 void Game::update() {
+    std::cout << isPause;
+
     if (window.hasFocus() && isStart == true) updateFPS();
     if (!window.hasFocus()) {
         movingDown = false;
@@ -58,6 +68,9 @@ void Game::update() {
         fpsArr.clear();
         fps = 100;
     }
+
+    if (isPause == true) return;
+
     updateDeath();
 
     if (sprite1.getGlobalBounds().top + 30 <= 0) { isWin = true; return; }
@@ -470,8 +483,8 @@ void Game::setSprites(int level) {
     if (!file.is_open()) showError(L"Error file loading: " + path + L"\nCheck levels/.rules.txt");
 
     std::vector<sf::Vector2f> vectorOfPositions;
-    for (int i = 0; i < 20; i++) {
-        for (int j = 0; j < 36; j++) {
+    for (int i = 0; i < windowHeight; i++) {
+        for (int j = 0; j < windowWidth; j++) {
             vectorOfPositions.push_back(sf::Vector2f(j * 30.0f, i * 30.0f));
         }
     }
@@ -482,11 +495,11 @@ void Game::setSprites(int level) {
     while (file.get(ch)) {
         if (!std::isdigit(ch) && ch != 'i') continue;
 
-        if (counter < 19 * 36 && ch == '9' && isCorrect1 == true) isCorrect1 = false;
-        if (counter >= 19 * 36 && ch != '9' && isCorrect2 == true) isCorrect2 = false;
+        if (counter < (windowHeight - 1) * windowWidth && ch == '9' && isCorrect1 == true) isCorrect1 = false;
+        if (counter >= (windowHeight - 1) * windowWidth && ch != '9' && isCorrect2 == true) isCorrect2 = false;
 
-        if (ch == '0' && counter < 36) randEnemySpawnNums.push_back(counter);
-        if ((ch == '3' || ch == '6') && counter < 36) randLadderEnemySpawn.push_back(counter);
+        if (ch == '0' && counter < windowWidth) randEnemySpawnNums.push_back(counter);
+        if ((ch == '3' || ch == '6') && counter < windowWidth) randLadderEnemySpawn.push_back(counter);
 
         bool udbool = false;
         bool blocksBool = false;
@@ -550,7 +563,7 @@ void Game::setSprites(int level) {
                 break;
         }
 
-        if (counter == vectorOfPositions.size()) showError(L"Error in " + path + L"\nThe field must be 20 x 36\nCheck levels/.rules.txt");
+        if (counter == vectorOfPositions.size()) showError(L"Error in " + path + L"\nWrong field size\nCheck levels/.rules.txt");
 
         if (victoryUDBool)
             sprite.setPosition(vectorOfPositions[counter].x, vectorOfPositions[counter].y - 2000);
@@ -573,7 +586,7 @@ void Game::setSprites(int level) {
         counter++;
     }
     if (mainPosition.x == -200.0f) showError(L"Error in " + path + L"\nThere must be the main character\nCheck levels/.rules.txt");
-    if (counter != 20 * 36) showError(L"Error in " + path + L"\nThe field must be 20 x 36\nCheck levels/.rules.txt");
+    if (counter != windowHeight * windowWidth) showError(L"Error in " + path + L"\nWrong field size\nCheck levels/.rules.txt");
     if (isCorrect1 == false) showError(L"Error in " + path + L"\nSymbols '9' should be only at the very bottom\nCheck levels/.rules.txt");
     if (isCorrect2 == false) showError(L"Error in " + path + L"\nThe last row should consist only of '9'\nCheck levels/.rules.txt");
 }
@@ -1071,8 +1084,9 @@ void Game::animateUD() {
 }
 
 void Game::initVariables() {
+    isPause = false;
     windowWidth = 36;
-    windowHeight = 20;
+    windowHeight = 21;
     generator.seed(static_cast<unsigned int>(std::time(nullptr)));
     enemyPercent = 2;
     mainPosition = sf::Vector2f(-200.0f, 0);
@@ -1166,12 +1180,13 @@ void Game::initVariables() {
 
 void Game::setWindow() {
     window.create(sf::VideoMode(windowWidth * 30, windowHeight * 30 + 20), "Lode Runner");
-    window.setPosition(sf::Vector2i(-9, 0));
-    window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height - 88));
+  //  window.setPosition(sf::Vector2i(-9, 0));
+   // window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height - 88));
+    window.setPosition(sf::Vector2i(800, 0));
     sf::Mouse::setPosition(sf::Vector2i(0, sf::VideoMode::getDesktopMode().height + 15));
     window.setFramerateLimit(400);
 }
-    
+
 void Game::setIcon() {
     sf::Image windowIcon = texture52.copyToImage();
     window.setIcon(windowIcon.getSize().x, windowIcon.getSize().y, windowIcon.getPixelsPtr());
@@ -1868,7 +1883,7 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
             return true;
         }
 
-        if (dSide.getGlobalBounds().intersects(sprBounds) && sprite.isCaught == true || 
+        if (dSide.getGlobalBounds().intersects(sprBounds) && sprite.isCaught == true ||
             dSide.getGlobalBounds().intersects(sprBounds) && sprite.isCaught == false && enemy.isFlyingTexture == false) {
             if (enemyTop != sprBounds.top - 30.0f)
                 enemy.sprite1.setPosition(enemyLeft + 15.0f, sprBounds.top - 30.0f + 15.0f);
