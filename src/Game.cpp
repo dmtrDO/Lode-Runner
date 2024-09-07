@@ -1145,8 +1145,8 @@ void Game::initVariables() {
     isStart = false;
     screenFade.setTexture(texture20);
     screenFade.setScale(windowWidth, windowHeight - 1);
-    transitionSpeed = 5;
-    opacity = 5;
+    transitionSpeed = 6;
+    opacity = 6;
     isDrawnFade = false;
     isWin = false;
     isRestart = false;
