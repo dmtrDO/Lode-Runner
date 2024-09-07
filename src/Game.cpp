@@ -19,18 +19,14 @@ void Game::handle() {
     sf::Event event;
     while (window.pollEvent(event)) {
         sf::Keyboard::Key key = event.key.code;
-        if (isPause == false && key == sf::Keyboard::Key::Escape) {
-            isPause = true;
+        if (key == sf::Keyboard::Key::Escape && event.type == sf::Event::KeyReleased && isStart == true) {
+            handleEscape();
             return;
-        }
-        if (isPause == true && key == sf::Keyboard::Key::Escape) {
-            isPause = false;
-            deltaTimeClock.restart();
         }
         switch (event.type) {
             case sf::Event::Closed:
                 window.close();
-                break;
+                break; 
             case sf::Event::KeyPressed:
                 if (key == sf::Keyboard::Key::F2) isRestart = true;
                 if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D || key == sf::Keyboard::Key::Numpad6) movingRight = true;
@@ -38,6 +34,7 @@ void Game::handle() {
                 if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W || key == sf::Keyboard::Key::Numpad8) movingUp = true;
                 if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S || key == sf::Keyboard::Key::Numpad5) movingDown = true;
                 if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::LShift) space = true;
+                if (isPause == true) handleText(key);
                 break;
             case sf::Event::KeyReleased:
                 if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D || key == sf::Keyboard::Key::Numpad6) movingRight = false;
@@ -55,26 +52,13 @@ void Game::handle() {
 }
 
 void Game::update() {
-    std::cout << isPause;
-
     if (window.hasFocus() && isStart == true) updateFPS();
-    if (!window.hasFocus()) {
-        movingDown = false;
-        movingUp = false;
-        movingLeft = false;
-        movingRight = false;
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        deltaTimeClock.restart();
-        fpsArr.clear();
-        fps = 100;
-    }
-
-    if (isPause == true) return;
+    if (!window.hasFocus()) updateUnfocus();
 
     updateDeath();
 
     if (sprite1.getGlobalBounds().top + 30 <= 0) { isWin = true; return; }
-    if (isRestart || isWin) return;
+    if (isRestart || isWin || isPause) return;
 
     if (window.hasFocus()) animateDeleted();
     if (!isVictory) updateGold();
@@ -100,15 +84,9 @@ void Game::update() {
 }
 
 void Game::draw() {
+
     window.clear(sf::Color::Black);
 
-    drawLevel();
-    if (isWin || isRestart) drawTransition();
-
-    window.display();
-}
-
-void Game::drawLevel() {
     for (int i = 0; i < levelSprites.size(); i++) {
         window.draw(levelSprites[i]);
     }
@@ -132,7 +110,78 @@ void Game::drawLevel() {
         window.draw(sprite);
     }
 
+    if (isRed && greenBlueOpacity < 255) {
+        sf::Color color;
+        color.a = 255;
+        color.g = greenBlueOpacity;
+        color.b = greenBlueOpacity;
+        color.r = 255;
+        text.setFillColor(color);
+        greenBlueOpacity++;
+    } else {
+        text.setFillColor(sf::Color::White);
+        isRed = false;
+        greenBlueOpacity = 0;
+    }
     window.draw(text);
+
+    if (isWin || isRestart) drawTransition();
+
+    window.display();
+}
+
+void Game::updateUnfocus() {
+    movingDown = false;
+    movingUp = false;
+    movingLeft = false;
+    movingRight = false;
+    isPause = true;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    deltaTimeClock.restart();
+    fpsArr.clear();
+    fps = 100;
+}
+
+void Game::handleEscape() {
+    if (isPause == false) {
+        isPause = true;
+        for (Stopwatch& stopwatch : queueTimer) { stopwatch.stop(); }
+    } else {
+        isPause = false;
+        for (Stopwatch& stopwatch : queueTimer) { stopwatch.start(); }
+        deltaTimeClock.restart();
+        text.setString(std::to_string(level));
+    }
+}
+
+void Game::handleText(sf::Keyboard::Key key) {
+    if (key == sf::Keyboard::BackSpace && text.getString().getSize() != 0) 
+        text.setString(text.getString().substring(0, text.getString().getSize() - 1));
+    
+    if (text.getString().getSize() < 3) {
+        if (key == sf::Keyboard::Num0) text.setString(text.getString() + std::to_string(0));
+        if (key == sf::Keyboard::Num1) text.setString(text.getString() + std::to_string(1));
+        if (key == sf::Keyboard::Num2) text.setString(text.getString() + std::to_string(2));
+        if (key == sf::Keyboard::Num3) text.setString(text.getString() + std::to_string(3));
+        if (key == sf::Keyboard::Num4) text.setString(text.getString() + std::to_string(4));
+        if (key == sf::Keyboard::Num5) text.setString(text.getString() + std::to_string(5));
+        if (key == sf::Keyboard::Num6) text.setString(text.getString() + std::to_string(6));
+        if (key == sf::Keyboard::Num7) text.setString(text.getString() + std::to_string(7));
+        if (key == sf::Keyboard::Num8) text.setString(text.getString() + std::to_string(8));
+        if (key == sf::Keyboard::Num9) text.setString(text.getString() + std::to_string(9));
+    }
+
+    if (key == sf::Keyboard::Enter) {
+        int enteredLevel = std::stoi(text.getString().toAnsiString());
+        if (enteredLevel >= 1 && enteredLevel <= getNumOfLevels() && enteredLevel != level) {
+            level = enteredLevel;
+            isRestart = true;
+        } else {
+            text.setString(std::to_string(level));
+            isRed = true;
+        }
+    }
+    
 }
 
 void Game::updateFPS() {
@@ -370,7 +419,7 @@ void Game::removeBlock(sf::Sprite& spaced) {
             sprite.setPosition(spacedX, spacedY - 2000);
     }
     queueDeleted.push_back(spaced);
-    sf::Clock timer;
+    Stopwatch timer;
     queueTimer.push_back(timer);
     isAnimatedDeletes.push_back(false);
     isPushedLS.push_back(false);
@@ -411,9 +460,9 @@ void Game::animateDeleted() {
             break;
         }
         float reawakenedTime = reawakenedTextures.size() * reawakenedInterval;
-        if (queueTimer[i].getElapsedTime().asMilliseconds() >= deletedBlockInterval * 1000.0f - reawakenedTime) {
+        if (queueTimer[i].getElapsedTime() >= deletedBlockInterval * 1000.0f - reawakenedTime) {
             if (miniAnimateDelete[i].getElapsedTime().asMilliseconds() >= reawakenedInterval) {
-                for (sf::Sprite& sprite : killedSprites) {
+                for (sf::Sprite& sprite : killedSprites) {  
                     if (sprite.getGlobalBounds().getPosition() == animatedSprites[i].getGlobalBounds().getPosition()) {
                         sprite.setTexture(reawakenedTextures[counterDeletedTextures[i]++]);
                         break;
@@ -1084,9 +1133,11 @@ void Game::animateUD() {
 }
 
 void Game::initVariables() {
+    greenBlueOpacity = 0;
+    isRed = false;
     isPause = false;
     windowWidth = 36;
-    windowHeight = 21;
+    windowHeight = 20;
     generator.seed(static_cast<unsigned int>(std::time(nullptr)));
     enemyPercent = 2;
     mainPosition = sf::Vector2f(-200.0f, 0);
@@ -1094,13 +1145,13 @@ void Game::initVariables() {
     isStart = false;
     screenFade.setTexture(texture20);
     screenFade.setScale(windowWidth, windowHeight - 1);
-    transitionSpeed = 1;
-    opacity = 1;
+    transitionSpeed = 5;
+    opacity = 5;
     isDrawnFade = false;
     isWin = false;
     isRestart = false;
     level = getLevel();
-    help = 2.0f;
+    help = 1.0f;
     isFromFly = false;
     space = false;
     onUD = false;
@@ -1180,11 +1231,12 @@ void Game::initVariables() {
 
 void Game::setWindow() {
     window.create(sf::VideoMode(windowWidth * 30, windowHeight * 30 + 20), "Lode Runner");
-  //  window.setPosition(sf::Vector2i(-9, 0));
-   // window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height - 88));
-    window.setPosition(sf::Vector2i(800, 0));
+    window.setPosition(sf::Vector2i(-9, 0));
+    window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height - 88));
+    //window.setSize(sf::Vector2u(160 * 4,  4 * 90));
+    //window.setPosition(sf::Vector2i(830, 0));
     sf::Mouse::setPosition(sf::Vector2i(0, sf::VideoMode::getDesktopMode().height + 15));
-    window.setFramerateLimit(400);
+    window.setFramerateLimit(500);
 }
 
 void Game::setIcon() {
@@ -1510,6 +1562,8 @@ void Game::updateLevel(bool isNextLevel) {
     killedSprites.clear();
     fpsArr.clear();
     isStart = false;
+    isPause = false;
+    isRed = false;
     isVictory = false;
     isFromFly = false;
     space = false;
@@ -1523,6 +1577,7 @@ void Game::updateLevel(bool isNextLevel) {
     movingUp = false;
     movingDown = false;
     fps = 0;
+    isPause = 0;
     flicker.restart();
 }
 

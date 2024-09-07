@@ -5,6 +5,7 @@
 #include "font.h"
 #include "images.h"
 #include "Enemy.h"
+#include "Stopwatch.cpp"
 
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
@@ -148,6 +149,8 @@ private:
 	int frameIndexWorkout;
 	bool isWorkout;
 
+	void handleEscape();
+
 	std::vector<sf::Sprite> spritesWorkout;
 
 	sf::Font font;
@@ -155,6 +158,11 @@ private:
 	void setText(int level);
 
 	bool isPause;
+	void handleText(sf::Keyboard::Key key);
+	bool isRed = false;
+	unsigned char greenBlueOpacity;
+
+	void updateUnfocus();
 
 	std::vector<sf::Sprite> victoryUD;
 	std::vector<sf::Sprite> goldSprites;
@@ -171,7 +179,7 @@ private:
 	void backBlock(sf::Sprite& spaced);
 
 	std::vector<sf::Sprite> queueDeleted;
-	std::vector<sf::Clock> queueTimer;
+	std::vector<Stopwatch> queueTimer;
 	void animateDeleted();
 
 	std::vector<sf::Texture> deletedTextures;
@@ -207,7 +215,6 @@ private:
 	std::vector<float> fpsArr;
 	void showError(std::wstring finalMessage);
 	void showErrorWithLink(std::wstring finalMessage, float step);
-	void drawLevel();
 	void drawTransition();
 	sf::Sprite screenFade;
 	sf::Texture textureFade;
