@@ -622,7 +622,7 @@ void Game::setSprites(int level) {
         if (enemy == true) {
             Enemy enemy(sprite.getGlobalBounds());
             levelSprites.push_back(enemy.sprite1);
-            enemies.push_back(Enemy(sprite.getGlobalBounds()));
+            enemies.push_back(enemy);
         } else if (voidBlock == false) levelSprites.push_back(sprite);
 
         if (spaced) spaceBlocks.push_back(sprite);
