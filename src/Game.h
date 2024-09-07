@@ -36,6 +36,9 @@ private:
 	int windowWidth;
 	int windowHeight;
 
+	int enemyMaxCounter;
+	int enemyCounter;
+
 	void setIcon();
 
 	sf::Clock deltaTimeClock;

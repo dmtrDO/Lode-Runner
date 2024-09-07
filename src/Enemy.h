@@ -14,7 +14,7 @@ class Enemy {
 
 public:
 
-	Enemy(sf::FloatRect bounds);
+	Enemy();
 
 	sf::Sprite sprite1;
 

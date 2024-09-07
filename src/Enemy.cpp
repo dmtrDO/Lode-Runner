@@ -7,12 +7,11 @@ std::vector <sf::Sprite> Enemy::spritesUD;
 std::vector <sf::Sprite> Enemy::blocks;
 std::vector <sf::Sprite> Enemy::holes;
 
-Enemy::Enemy(sf::FloatRect bounds) {
+Enemy::Enemy() {
 	loadTextures();
 	initVariables();
 	sprite1.setColor(sf::Color::Magenta);
 	sprite1.setOrigin(15.0f, 15.0f);
-	sprite1.setPosition(bounds.left + 15.0f, bounds.top + 15.0f);
 	generator.seed(static_cast<unsigned int>(std::time(nullptr)));
 }
 

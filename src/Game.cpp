@@ -135,7 +135,6 @@ void Game::updateUnfocus() {
     movingUp = false;
     movingLeft = false;
     movingRight = false;
-    isPause = true;
     std::this_thread::sleep_for(std::chrono::seconds(1));
     deltaTimeClock.restart();
     fpsArr.clear();
@@ -519,13 +518,17 @@ void Game::backBlock(sf::Sprite& spaced) {
 
 void Game::setSprites(int level) {
     levelSprites.clear();
-    enemies.clear();
     spaceBlocks.clear();
     goldSprites.clear();
     spritesUD.clear();
     blocks.clear();
     forFly.clear();
     spritesWorkout.clear();
+    if (enemies.empty()) {
+        for (int i = 0; i < enemyMaxCounter; i++) {
+            enemies.push_back(Enemy());
+        }
+    }
 
     std::wstring path = L"levels/level" + std::to_wstring(level) + L".txt";
     std::ifstream file(path);
@@ -596,6 +599,7 @@ void Game::setSprites(int level) {
                 victoryUDBool = true;
                 break;
             case '7':
+                if (enemyCounter == enemyMaxCounter) showError(L"Maximum number of enemeis is " + std::to_wstring(enemyMaxCounter));
                 enemy = true;
                 break;
             case '8':
@@ -620,9 +624,8 @@ void Game::setSprites(int level) {
             sprite.setPosition(vectorOfPositions[counter]);
 
         if (enemy == true) {
-            Enemy enemy(sprite.getGlobalBounds());
-            levelSprites.push_back(enemy.sprite1);
-            enemies.push_back(enemy);
+            enemies.at(enemyCounter).sprite1.setPosition(sprite.getGlobalBounds().left + 15, sprite.getGlobalBounds().top + 15);
+            enemyCounter++;
         } else if (voidBlock == false) levelSprites.push_back(sprite);
 
         if (spaced) spaceBlocks.push_back(sprite);
@@ -1133,6 +1136,8 @@ void Game::animateUD() {
 }
 
 void Game::initVariables() {
+    enemyCounter = 0;
+    enemyMaxCounter = 6;
     greenBlueOpacity = 0;
     isRed = false;
     isPause = false;
@@ -1546,6 +1551,7 @@ void Game::updateLevel(bool isNextLevel) {
         else
             level++;
     }
+    enemyCounter = 0;
     setSprites(level);
     setSprite1();
     setEnemies();
@@ -1713,8 +1719,11 @@ void Game::openLink(const std::string& url) {
 }
 
 void Game::setEnemies() {
-    for (Enemy& enemy : enemies) {
-        enemy.sprite1.setTexture(texture13);
+    for (int i = 0; i < enemyCounter; i++) {
+        enemies.at(i).sprite1.setTexture(texture13);
+    }
+    for (; enemyCounter < enemyMaxCounter; enemyCounter++) {
+        enemies.at(enemyCounter).sprite1.setPosition(-100, 0);
     }
     Enemy::forFly = forFly;
     Enemy::spritesUD = spritesUD;
