@@ -232,8 +232,7 @@ bool Game::updateHelp(sf::Time& deltaTime) {
     float rectopLeft = rectopBounds.left;
     float rectopTop = rectopBounds.top;
 
-    float hlp = help;
-    if (fpsArr.empty() == false && fpsArr.back() > 90) hlp = help / 2;
+    float hlp = help / 2 + 0.25f;
 
     for (sf::Sprite& sprite : spritesUD) {
 
@@ -1241,7 +1240,7 @@ void Game::setWindow() {
     //window.setSize(sf::Vector2u(160 * 4,  4 * 90));
     //window.setPosition(sf::Vector2i(830, 0));
     sf::Mouse::setPosition(sf::Vector2i(0, sf::VideoMode::getDesktopMode().height + 15));
-    window.setFramerateLimit(500);
+    window.setFramerateLimit(300);
 }
 
 void Game::setIcon() {
