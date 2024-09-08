@@ -29,7 +29,6 @@ public:
     float getElapsedTime() {
         if (isPaused == false) 
             time2 = t::duration_cast<t::milliseconds>(t::high_resolution_clock::now().time_since_epoch()).count();
-        
         return time2 - time1;
     }
 };

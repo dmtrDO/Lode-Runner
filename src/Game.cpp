@@ -549,7 +549,7 @@ void Game::setSprites(int level) {
         if (counter < (windowHeight - 1) * windowWidth && ch == '9' && isCorrect1 == true) isCorrect1 = false;
         if (counter >= (windowHeight - 1) * windowWidth && ch != '9' && isCorrect2 == true) isCorrect2 = false;
 
-        if (ch == '0' && counter < windowWidth) randEnemySpawnNums.push_back(counter);
+        if (ch == ' ' && counter < windowWidth) randEnemySpawnNums.push_back(counter);
         if ((ch == '3' || ch == '6') && counter < windowWidth) randLadderEnemySpawn.push_back(counter);
 
         bool udbool = false;
@@ -565,7 +565,7 @@ void Game::setSprites(int level) {
         sf::Sprite sprite;
 
         switch (ch) {
-            case '0':
+            case ' ':
                 voidBlock = true;
                 sprite.setTexture(texture20);
                 break;
@@ -598,7 +598,8 @@ void Game::setSprites(int level) {
                 victoryUDBool = true;
                 break;
             case '7':
-                if (enemyCounter == enemyMaxCounter) showError(L"Maximum number of enemeis is " + std::to_wstring(enemyMaxCounter));
+                if (enemyCounter == enemyMaxCounter) 
+                    showError(L"Maximum number of enemeis is " + std::to_wstring(enemyMaxCounter) + L"\nCheck levels/.rules.txt");
                 enemy = true;
                 break;
             case '8':
@@ -1149,8 +1150,8 @@ void Game::initVariables() {
     isStart = false;
     screenFade.setTexture(texture20);
     screenFade.setScale(windowWidth, windowHeight - 1);
-    transitionSpeed = 2;
-    opacity = 2;
+    transitionSpeed = 4;
+    opacity = 4;
     isDrawnFade = false;
     isWin = false;
     isRestart = false;
@@ -1235,10 +1236,10 @@ void Game::initVariables() {
 
 void Game::setWindow() {
     window.create(sf::VideoMode(windowWidth * 30, windowHeight * 30 + 20), "Lode Runner");
-    window.setPosition(sf::Vector2i(-9, 0));
-    window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height - 88));
-    //window.setSize(sf::Vector2u(160 * 4,  4 * 90));
-    //window.setPosition(sf::Vector2i(830, 0));
+    //window.setPosition(sf::Vector2i(-9, 0));
+    //window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height - 88));
+    //window.setSize(sf::Vector2u(160 * 6,  6 * 90));
+    //window.setPosition(sf::Vector2i(950, 0));
     sf::Mouse::setPosition(sf::Vector2i(0, sf::VideoMode::getDesktopMode().height + 15));
     window.setFramerateLimit(300);
 }
@@ -1980,7 +1981,7 @@ void Game::updateEnemies(sf::Time& deltaTime) {
     for (Enemy& enemy : enemies) {
         enemy.initMoves();
         setEnemyMove(enemy);
-        //enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp; enemy.movingDown = movingDown;
+        enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp; enemy.movingDown = movingDown;
         updateEnemyDeath(enemy);
         updateEnemyPickGold(enemy);
         if (updateEnemiesCollisions(enemy, deltaTime) == true || enemy.updateCaught(deltaTime, sprite1)) continue;
