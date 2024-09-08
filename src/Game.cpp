@@ -1236,9 +1236,7 @@ void Game::initVariables() {
 
 void Game::setWindow() {
     window.create(sf::VideoMode(windowWidth * 30, windowHeight * 30 + 20), "Lode Runner");
-    window.setPosition(sf::Vector2i(-9, 0));
     window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width - 200, sf::VideoMode::getDesktopMode().height - 200));
-    //window.setSize(sf::Vector2u(160 * 6,  6 * 90));
     window.setPosition(sf::Vector2i(100, 50));
     sf::Mouse::setPosition(sf::Vector2i(sf::VideoMode::getDesktopMode().width / 2, 0));
     window.setFramerateLimit(300);
@@ -1981,7 +1979,7 @@ void Game::updateEnemies(sf::Time& deltaTime) {
     for (Enemy& enemy : enemies) {
         enemy.initMoves();
         setEnemyMove(enemy);
-       // enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp; enemy.movingDown = movingDown;
+        enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp; enemy.movingDown = movingDown;
         updateEnemyDeath(enemy);
         updateEnemyPickGold(enemy);
         if (updateEnemiesCollisions(enemy, deltaTime) == true || enemy.updateCaught(deltaTime, sprite1)) continue;
