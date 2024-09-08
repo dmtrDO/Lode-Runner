@@ -34,7 +34,7 @@ void Game::handle() {
                 if (key == sf::Keyboard::Key::Up || key == sf::Keyboard::Key::W || key == sf::Keyboard::Key::Numpad8) movingUp = true;
                 if (key == sf::Keyboard::Key::Down || key == sf::Keyboard::Key::S || key == sf::Keyboard::Key::Numpad5) movingDown = true;
                 if (key == sf::Keyboard::Key::Space || key == sf::Keyboard::Key::LShift) space = true;
-                if (isPause == true) handleText(key);
+                if (isPause == true || isStart == false) handleText(key);
                 break;
             case sf::Event::KeyReleased:
                 if (key == sf::Keyboard::Key::Right || key == sf::Keyboard::Key::D || key == sf::Keyboard::Key::Numpad6) movingRight = false;
@@ -57,7 +57,7 @@ void Game::update() {
 
     updateDeath();
 
-    if (sprite1.getGlobalBounds().top + 30 <= 0) { isWin = true; return; }
+    if (sprite1.getGlobalBounds().top <= 0 && goldSprites.empty()) { isWin = true; return; }
     if (isRestart || isWin || isPause) return;
 
     if (window.hasFocus()) animateDeleted();
@@ -98,7 +98,7 @@ void Game::draw() {
         } else if (time >= flickTime && time < 2.0f * flickTime) {
             sprite1.setTexture(texture0);
         } else flicker.restart();
-    } else if (fps < 5 && flicker.getElapsedTime().asSeconds() < flickTime) sprite1.setTexture(texture0);
+    } else if (fps < 15 && flicker.getElapsedTime().asSeconds() < flickTime) sprite1.setTexture(texture0);
 
     window.draw(sprite1);
 
@@ -189,13 +189,13 @@ void Game::updateFPS() {
         std::cout << fps << "\n";
         framesClock.restart();
         fpsArr.push_back(fps);
-        if (fpsArr.size() == 10) {
+        if (fpsArr.size() == 5) {
             int average = 0;
             for (float value : fpsArr) {
                 average += value;
             }
             average /= fpsArr.size();
-            if (average < 80) showError(L"Too few frames per second for playing");
+            if (average < 100) showError(L"Too few frames per second for playing");
             fpsArr.clear();
         }
         fps = 0;
@@ -326,7 +326,7 @@ void Game::updateDeath() {
         sf::FloatRect intersection;
         if (spriteBounds.intersects(sprite.sprite1.getGlobalBounds(), intersection)) {
             float area = intersection.width * intersection.height;
-            if (area >= 350) {
+            if (area >= 400) {
                 isRestart = true;
                 return;
             }
@@ -345,9 +345,9 @@ void Game::updateSpace() {
         for (sf::Sprite& sprite : spaceBlocks) {
             if (!sprite.getGlobalBounds().intersects(helpArea.getGlobalBounds())) continue;
 
-            sf::RectangleShape left(sf::Vector2f(60.0f, 1.0f)), right(sf::Vector2f(60.0f, 1.0f));
-            left.setPosition(sprite.getGlobalBounds().left + 15 - 55, sprite.getGlobalBounds().top - 1.0f);
-            right.setPosition(sprite.getGlobalBounds().left + 10, sprite.getGlobalBounds().top - 1.0f);
+            sf::RectangleShape left(sf::Vector2f(60.0f, 2 * help)), right(sf::Vector2f(60.0f, 2 * help));
+            left.setPosition(sprite.getGlobalBounds().left + 15 - 55, sprite.getGlobalBounds().top - 2 * help);
+            right.setPosition(sprite.getGlobalBounds().left + 10, sprite.getGlobalBounds().top - 2 * help);
 
             sf::FloatRect intersection;
             if ((sprite1.getGlobalBounds().intersects(left.getGlobalBounds(), intersection) && intersection.width == 30.0f && vector == 1)
@@ -1719,6 +1719,7 @@ void Game::openLink(const std::string& url) {
 void Game::setEnemies() {
     for (int i = 0; i < enemyCounter; i++) {
         enemies.at(i).sprite1.setTexture(texture13);
+        enemies.at(i).initVariables();
     }
     for (; enemyCounter < enemyMaxCounter; enemyCounter++) {
         enemies.at(enemyCounter).sprite1.setPosition(-100, 0);
@@ -1787,9 +1788,9 @@ void Game::updateGold() {
         sf::FloatRect intersection;
         if (sprite1.getGlobalBounds().intersects(goldSprites[i].getGlobalBounds(), intersection)) {
             float area = intersection.width * intersection.height;
-            if (area >= 700) {
+            if (area >= 550) {
                 for (int j = 0; j < levelSprites.size(); j++) {
-                    if (levelSprites[j].getGlobalBounds().top == goldSprites[i].getGlobalBounds().top && levelSprites[j].getGlobalBounds().left == goldSprites[i].getGlobalBounds().left) {
+                    if (goldSprites[i].getGlobalBounds().getPosition() == levelSprites[j].getGlobalBounds().getPosition()) {
                         levelSprites[j].setTexture(texture20);
                     }
                 }
@@ -2006,7 +2007,7 @@ bool Game::updateOnEnemy(sf::Time deltaTime) {
     helpArea.setOrigin(helpArea.getLocalBounds().width / 2, helpArea.getLocalBounds().height / 2);
     helpArea.setPosition(spriteLeft + 15, spriteTop + 15);
 
-    sf::RectangleShape under(sf::Vector2f(30.0f - 2 * help, help));
+    sf::RectangleShape under(sf::Vector2f(30.0f - 2 * help, 2 * help));
     under.setPosition(sprite1.getGlobalBounds().left + help, sprite1.getGlobalBounds().top + 30.0f);
 
     for (Enemy& enemy : enemies) {

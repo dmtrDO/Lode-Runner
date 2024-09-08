@@ -15,6 +15,7 @@ class Enemy {
 public:
 
 	Enemy();
+	void initVariables();
 
 	sf::Sprite sprite1;
 
@@ -96,7 +97,6 @@ private:
 	float animationMoveIntervalWorkout;
 
 	void loadTextures();
-	void initVariables();
 
 	sf::Texture texture0;
 	sf::Texture texture1;

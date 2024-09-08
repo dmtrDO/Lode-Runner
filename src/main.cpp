@@ -1,7 +1,7 @@
 
 #include "Game.h" 
 
-int main() {
+int WinMain() {
 
     Game game;
 
