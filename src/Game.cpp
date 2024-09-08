@@ -544,7 +544,7 @@ void Game::setSprites(int level) {
     bool isCorrect1 = true;
     bool isCorrect2 = true;
     while (file.get(ch)) {
-        if (!std::isdigit(ch) && ch != 'i') continue;
+        if (!std::isdigit(ch) && ch != 'i' && ch != ' ') continue;
 
         if (counter < (windowHeight - 1) * windowWidth && ch == '9' && isCorrect1 == true) isCorrect1 = false;
         if (counter >= (windowHeight - 1) * windowWidth && ch != '9' && isCorrect2 == true) isCorrect2 = false;
@@ -1141,8 +1141,8 @@ void Game::initVariables() {
     greenBlueOpacity = 0;
     isRed = false;
     isPause = false;
-    windowWidth = 36;
-    windowHeight = 20;
+    windowWidth = 28;
+    windowHeight = 17;
     generator.seed(static_cast<unsigned int>(std::time(nullptr)));
     enemyPercent = 2;
     mainPosition = sf::Vector2f(-200.0f, 0);
@@ -1236,8 +1236,8 @@ void Game::initVariables() {
 
 void Game::setWindow() {
     window.create(sf::VideoMode(windowWidth * 30, windowHeight * 30 + 20), "Lode Runner");
-    //window.setPosition(sf::Vector2i(-9, 0));
-    //window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height - 88));
+    window.setPosition(sf::Vector2i(-9, 0));
+    window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width, sf::VideoMode::getDesktopMode().height - 88));
     //window.setSize(sf::Vector2u(160 * 6,  6 * 90));
     //window.setPosition(sf::Vector2i(950, 0));
     sf::Mouse::setPosition(sf::Vector2i(0, sf::VideoMode::getDesktopMode().height + 15));
@@ -1981,7 +1981,7 @@ void Game::updateEnemies(sf::Time& deltaTime) {
     for (Enemy& enemy : enemies) {
         enemy.initMoves();
         setEnemyMove(enemy);
-        enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp; enemy.movingDown = movingDown;
+       // enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp; enemy.movingDown = movingDown;
         updateEnemyDeath(enemy);
         updateEnemyPickGold(enemy);
         if (updateEnemiesCollisions(enemy, deltaTime) == true || enemy.updateCaught(deltaTime, sprite1)) continue;

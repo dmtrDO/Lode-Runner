@@ -753,8 +753,8 @@ bool Enemy::updateFly() {
 
 void Enemy::initVariables() {
 	tempIgnore = false;
-	windowWidth = 36;
-	windowHeight = 20;
+	windowWidth = 28;
+	windowHeight = 17;
 	direction = 0;
 	ladderDirection = 0;
 	isLadderDirectionChanged = false;
