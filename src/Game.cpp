@@ -206,7 +206,7 @@ void Game::handleText(sf::Keyboard::Key key) {
 void Game::updateFPS() {
     fps++;
     if (framesClock.getElapsedTime().asSeconds() >= 1.0f) {
-        //std::cout << fps << "\n";
+        std::cout << fps << "\n";
         framesClock.restart();
         fpsArr.push_back(fps);
         if (fpsArr.size() == 5) {
@@ -2186,7 +2186,7 @@ bool Game::checkR() {
     return false;
 }
 
-bool Game::isEnemyFlying(sf::Sprite& enemy) {
+bool Game::getIsEnemyFlying(sf::Sprite& enemy) {
     sf::FloatRect enemyBounds = enemy.getGlobalBounds();
     sf::RectangleShape under(sf::Vector2f(30.0f, help));
     under.setPosition(enemyBounds.left, enemyBounds.top + 30.0f);
@@ -2208,8 +2208,8 @@ bool Game::isEnemyFlying(sf::Sprite& enemy) {
     return true;
 }
 
-bool Game::isEnableEnemyRight(Enemy& enemy) {
-    if (isEnemyFlying(enemy.sprite1) == true) return false;
+bool Game::getIsEnableEnemyRight(Enemy& enemy) {
+    if (getIsEnemyFlying(enemy.sprite1) == true) return false;
 
     sf::RectangleShape rSide(sf::Vector2f(help, 30.0f - 2 * help));
     sf::FloatRect enemyBounds = enemy.sprite1.getGlobalBounds();
@@ -2228,8 +2228,8 @@ bool Game::isEnableEnemyRight(Enemy& enemy) {
     return true;
 }
 
-bool Game::isEnableEnemyLeft(Enemy& enemy) {
-    if (isEnemyFlying(enemy.sprite1) == true) return false;
+bool Game::getIsEnableEnemyLeft(Enemy& enemy) {
+    if (getIsEnemyFlying(enemy.sprite1) == true) return false;
 
     sf::RectangleShape lSide(sf::Vector2f(help, 30.0f - 2 * help));
     sf::FloatRect enemyBounds = enemy.sprite1.getGlobalBounds();
@@ -2248,8 +2248,8 @@ bool Game::isEnableEnemyLeft(Enemy& enemy) {
     return true;
 }
 
-bool Game::isEnableEnemyUp(Enemy& enemy) {
-    if (isEnemyFlying(enemy.sprite1) == true) return false;
+bool Game::getIsEnableEnemyUp(Enemy& enemy) {
+    if (getIsEnemyFlying(enemy.sprite1) == true) return false;
 
     sf::FloatRect enemyBounds = enemy.sprite1.getGlobalBounds();
     if (enemyBounds.top <= 0) return false;
@@ -2275,8 +2275,8 @@ bool Game::isEnableEnemyUp(Enemy& enemy) {
     return true;
 }
 
-bool Game::isEnableEnemyDown(Enemy& enemy) {
-    if (isEnemyFlying(enemy.sprite1) == true) return false;
+bool Game::getIsEnableEnemyDown(Enemy& enemy) {
+    if (getIsEnemyFlying(enemy.sprite1) == true) return false;
 
     sf::FloatRect enemyBounds = enemy.sprite1.getGlobalBounds();
     sf::RectangleShape dSide(sf::Vector2f(30.0f - 2 * help, help));
@@ -2318,6 +2318,12 @@ bool Game::isEnableEnemyDown(Enemy& enemy) {
 
 void Game::setEnemyMove(Enemy& enemy) {
 
+    bool isEnemyFlying = getIsEnemyFlying(enemy.sprite1);
+    bool isEnableEnemyUp = getIsEnableEnemyUp(enemy);
+    bool isEnableEnemyDown = getIsEnableEnemyDown(enemy);
+    bool isEnableEnemyLeft = getIsEnableEnemyLeft(enemy);
+    bool isEnableEnemyRight = getIsEnableEnemyRight(enemy);
+
     sf::FloatRect enemyBounds = enemy.sprite1.getGlobalBounds();
     sf::FloatRect spriteBounds = sprite1.getGlobalBounds();
 
@@ -2328,34 +2334,34 @@ void Game::setEnemyMove(Enemy& enemy) {
             enemy.direction = -1;
     }
 
-    if (enemy.isCaught || enemy.isClimbed || isEnemyFlying(enemy.sprite1) || (enemyBounds.left == spriteBounds.left && enemy.isFlyingTexture)) {
+    if (enemy.isCaught || enemy.isClimbed || isEnemyFlying || (enemyBounds.left == spriteBounds.left && enemy.isFlyingTexture)) {
         enemy.isDirectionChanged = false;
         enemy.direction = 0;
         return;
     }
 
-    if (spriteBounds.top > enemyBounds.top + help && isEnableEnemyDown(enemy) && enemy.isLadderDirectionChanged == false) {
+    if (spriteBounds.top > enemyBounds.top + help && isEnableEnemyDown && enemy.isLadderDirectionChanged == false) {
         enemy.isDirectionChanged = false;
         enemy.direction = 0;
         enemy.movingDown = true;
         enemy.ladderDirection = -1;
         return;
 
-    } else if (spriteBounds.top < enemyBounds.top - help && isEnableEnemyUp(enemy) && enemy.isLadderDirectionChanged == false) {
+    } else if (spriteBounds.top < enemyBounds.top - help && isEnableEnemyUp && enemy.isLadderDirectionChanged == false) {
         enemy.isDirectionChanged = false;
         enemy.direction = 0;
         enemy.movingUp = true;
         enemy.ladderDirection = 1;
         return;
 
-    } else if (spriteBounds.left > enemyBounds.left + help && isEnableEnemyRight(enemy) && enemy.isDirectionChanged == false) {
+    } else if (spriteBounds.left > enemyBounds.left + help && isEnableEnemyRight && enemy.isDirectionChanged == false) {
         enemy.movingRight = true;
         enemy.direction = 1;
         enemy.isLadderDirectionChanged = false;
         enemy.ladderDirection = 0;
         return;
 
-    } else if (spriteBounds.left < enemyBounds.left - help && isEnableEnemyLeft(enemy) && enemy.isDirectionChanged == false) {
+    } else if (spriteBounds.left < enemyBounds.left - help && isEnableEnemyLeft && enemy.isDirectionChanged == false) {
         enemy.isLadderDirectionChanged = false;
         enemy.ladderDirection = 0;
         enemy.movingLeft = true;
@@ -2364,23 +2370,23 @@ void Game::setEnemyMove(Enemy& enemy) {
 
     } else {
 
-        if (enemy.ladderDirection == 1 && isEnableEnemyUp(enemy)) {
+        if (enemy.ladderDirection == 1 && isEnableEnemyUp) {
             enemy.movingUp = true;
             enemy.isLadderDirectionChanged = true;
-        } else if (enemy.ladderDirection == -1 && isEnableEnemyDown(enemy)) {
+        } else if (enemy.ladderDirection == -1 && isEnableEnemyDown) {
             enemy.movingDown = true;
             enemy.isLadderDirectionChanged = true;
         }
 
         if (enemy.isDirectionChanged == false) {
             if (enemy.direction == 1) {
-                if (enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyRight(enemy) == false) {
+                if (enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyRight == false) {
                     enemy.direction = -1;
                     enemy.movingLeft = true;
                 }
                 enemy.isDirectionChanged = true;
             } else if (enemy.direction == -1) {
-                if (enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyLeft(enemy) == false) {
+                if (enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyLeft == false) {
                     enemy.direction = 1;
                     enemy.movingRight = true;
                 }
@@ -2389,10 +2395,10 @@ void Game::setEnemyMove(Enemy& enemy) {
         } else {
             if (enemy.direction == 1) {
                 enemy.movingRight = true;
-                if (isEnableEnemyRight(enemy) == false) enemy.isDirectionChanged = false;
+                if (isEnableEnemyRight == false) enemy.isDirectionChanged = false;
             } else if (enemy.direction == -1) {
                 enemy.movingLeft = true;
-                if (isEnableEnemyLeft(enemy) == false) enemy.isDirectionChanged = false;
+                if (isEnableEnemyLeft == false) enemy.isDirectionChanged = false;
             }
         }
 

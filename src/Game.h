@@ -244,11 +244,11 @@ private:
 	bool updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime);
 	bool checkR();
 	bool checkL();
-	bool isEnemyFlying(sf::Sprite& enemy);
-	bool isEnableEnemyRight(Enemy& enemy);
-	bool isEnableEnemyLeft(Enemy& enemy);
-	bool isEnableEnemyUp(Enemy& enemy);
-	bool isEnableEnemyDown(Enemy& enemy);
+	bool getIsEnemyFlying(sf::Sprite& enemy);
+	bool getIsEnableEnemyRight(Enemy& enemy);
+	bool getIsEnableEnemyLeft(Enemy& enemy);
+	bool getIsEnableEnemyUp(Enemy& enemy);
+	bool getIsEnableEnemyDown(Enemy& enemy);
 
 	std::vector<sf::Sprite> invisibleBlocks;
 	bool isBlack;
