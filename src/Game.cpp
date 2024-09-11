@@ -45,7 +45,7 @@ void Game::handle() {
                 break;
         }
     }
-    if (!isStart && (space || movingLeft || movingRight || movingUp || movingDown)) {
+    if (!isStart && (space || movingLeft || movingRight || movingUp || movingDown) && opacity <= transitionSpeed) {
         isStart = true;
         fps = 100;
     }
@@ -59,6 +59,8 @@ void Game::update() {
 
     if (sprite1.getGlobalBounds().top <= 0 && goldSprites.empty()) { isWin = true; return; }
     if (isRestart || isWin || isPause) return;
+
+    updateSpace();
 
     if (window.hasFocus()) animateDeleted();
     if (!isVictory) updateGold();
@@ -79,7 +81,6 @@ void Game::update() {
     if (updateHelp(deltaTime)) return;
     updateMoveLR(deltaTime);
     updateMoveUD(deltaTime);
-    updateSpace();
     if (isFromFly) sprite1.setTexture(texture13);
 }
 
@@ -98,7 +99,10 @@ void Game::draw() {
         } else if (time >= flickTime && time < 2.0f * flickTime) {
             sprite1.setTexture(texture0);
         } else flicker.restart();
-    } else if (fps < 15 && flicker.getElapsedTime().asSeconds() < flickTime) sprite1.setTexture(texture0);
+    } else if (isBlack) {
+        isBlack = false;
+        sprite1.setTexture(texture0);
+    }
 
     window.draw(sprite1);
 
@@ -171,11 +175,27 @@ void Game::handleText(sf::Keyboard::Key key) {
     }
 
     if (key == sf::Keyboard::Enter) {
+        if (text.getString().isEmpty()) {
+            text.setString(std::to_string(level));
+            isRed = true;
+        }
         int enteredLevel = std::stoi(text.getString().toAnsiString());
         if (enteredLevel >= 1 && enteredLevel <= getNumOfLevels() && enteredLevel != level) {
             level = enteredLevel;
             isRestart = true;
         } else {
+            text.setString(std::to_string(level));
+            isRed = true;
+        }
+    }
+
+    if ((space || movingLeft || movingRight || movingUp || movingDown) && opacity <= transitionSpeed && isPause == false) {
+        if (text.getString().isEmpty()) {
+            text.setString(std::to_string(level));
+            isRed = true;
+        }
+        int enteredLevel = std::stoi(text.getString().toAnsiString());
+        if (enteredLevel != level) {
             text.setString(std::to_string(level));
             isRed = true;
         }
@@ -186,7 +206,7 @@ void Game::handleText(sf::Keyboard::Key key) {
 void Game::updateFPS() {
     fps++;
     if (framesClock.getElapsedTime().asSeconds() >= 1.0f) {
-        std::cout << fps << "\n";
+        //std::cout << fps << "\n";
         framesClock.restart();
         fpsArr.push_back(fps);
         if (fpsArr.size() == 5) {
@@ -345,13 +365,16 @@ void Game::updateSpace() {
         for (sf::Sprite& sprite : spaceBlocks) {
             if (!sprite.getGlobalBounds().intersects(helpArea.getGlobalBounds())) continue;
 
-            sf::RectangleShape left(sf::Vector2f(60.0f, 2 * help)), right(sf::Vector2f(60.0f, 2 * help));
-            left.setPosition(sprite.getGlobalBounds().left + 15 - 55, sprite.getGlobalBounds().top - 2 * help);
-            right.setPosition(sprite.getGlobalBounds().left + 10, sprite.getGlobalBounds().top - 2 * help);
+            sf::RectangleShape left(sf::Vector2f(62.0f, 1.0f)), right(sf::Vector2f(62.0f, 1.0f));
+            left.setPosition(sprite.getGlobalBounds().left + 15 - 52, sprite.getGlobalBounds().top - 1.0f);
+            right.setPosition(sprite.getGlobalBounds().left + 7, sprite.getGlobalBounds().top - 1.0f);
 
             sf::FloatRect intersection;
-            if ((sprite1.getGlobalBounds().intersects(left.getGlobalBounds(), intersection) && intersection.width == 30.0f && vector == 1)
-                || (sprite1.getGlobalBounds().intersects(right.getGlobalBounds(), intersection) && intersection.width == 30.0f && vector == -1)) {
+            if ((sprite1.getGlobalBounds().intersects(left.getGlobalBounds(), intersection) 
+                && intersection.width >= 30.0f - help && intersection.width <= 30.0f + help && vector == 1)
+                || (sprite1.getGlobalBounds().intersects(right.getGlobalBounds(), intersection) 
+                    && intersection.width >= 30.0f - help && intersection.width <= 30.0f + help && vector == -1)) {
+
                 if (checkSpace(sprite)) return;
                 if (spaceTime.getElapsedTime().asMilliseconds() < 250)
                     return;
@@ -561,6 +584,7 @@ void Game::setSprites(int level) {
         bool enemy = false;
         bool spaced = false;
         bool voidBlock = false;
+        bool isInvisible = false;
 
         sf::Sprite sprite;
 
@@ -612,6 +636,7 @@ void Game::setSprites(int level) {
                 sprite.setTexture(texture19);
                 break;
             case 'i':
+                isInvisible = true;
                 sprite.setTexture(texture15);
                 break;
         }
@@ -634,6 +659,7 @@ void Game::setSprites(int level) {
         if (blocksBool) blocks.push_back(sprite);
         if (notFly || victoryUDBool) forFly.push_back(sprite);
         if (workout) spritesWorkout.push_back(sprite);
+        if (isInvisible) invisibleBlocks.push_back(sprite);
 
         counter++;
     }
@@ -813,7 +839,7 @@ bool Game::updateFly() {
                 if (movingUp) return false;
                 for (sf::Sprite spr : forFly) {
                     sf::FloatRect area;
-                    if (rectBounds.intersects(spr.getGlobalBounds(), area) && area.width < 2 * help) {
+                    if (rectBounds.intersects(spr.getGlobalBounds(), area) && area.width < 5 * help) {
                         int counter = 0;
                         for (sf::Sprite& spri : forFly) {
                             if (rectBounds.intersects(spri.getGlobalBounds()) && spri.getGlobalBounds().getPosition() != spr.getGlobalBounds().getPosition()) {
@@ -837,13 +863,13 @@ bool Game::updateFly() {
                 sf::FloatRect floorArea;
                 for (sf::Sprite& spr : forFly) {
                     if (!rectBounds.intersects(spr.getGlobalBounds())
-                        || (rectBounds.intersects(spr.getGlobalBounds(), floorArea) && floorArea.width < 2 * help)) floorCounter++;
+                        || (rectBounds.intersects(spr.getGlobalBounds(), floorArea) && floorArea.width < 5 * help)) floorCounter++;
                 }
                 if (floorCounter == forFly.size()) {
                     int ladCounter = 0;
                     for (sf::Sprite& spr : spritesUD) {
                         sf::FloatRect intersectionArea;
-                        if (spriteBounds.intersects(spr.getGlobalBounds(), intersectionArea) && intersectionArea.width < 2 * help
+                        if (spriteBounds.intersects(spr.getGlobalBounds(), intersectionArea) && intersectionArea.width < 5 * help
                             && spriteTop == spr.getGlobalBounds().top) ladCounter++;
                     }
                     if (ladCounter == 1) {
@@ -983,6 +1009,12 @@ void Game::updateMoveUD(sf::Time deltaTime) {
     sf::FloatRect spriteBounds = sprite1.getGlobalBounds();
     float spriteLeft = spriteBounds.left;
     float spriteTop = spriteBounds.top;
+
+    if (sprite1.getGlobalBounds().top <= 0 && movingUp == true) {
+        sprite1.setPosition(spriteLeft + 15.0f, 15.0f);
+        movingUp = false;
+        return;
+    }
 
     sf::RectangleShape helpArea(sf::Vector2f(90.0f, 90.0f));
     helpArea.setOrigin(helpArea.getLocalBounds().width / 2, helpArea.getLocalBounds().height / 2);
@@ -1136,6 +1168,7 @@ void Game::animateUD() {
 }
 
 void Game::initVariables() {
+    isBlack = true;
     enemyCounter = 0;
     enemyMaxCounter = 6;
     greenBlueOpacity = 0;
@@ -1238,6 +1271,8 @@ void Game::setWindow() {
     window.create(sf::VideoMode(windowWidth * 30, windowHeight * 30 + 20), "Lode Runner");
     window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width - 200, sf::VideoMode::getDesktopMode().height - 200));
     window.setPosition(sf::Vector2i(100, 50));
+   // window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width - 400, sf::VideoMode::getDesktopMode().height - 200));
+    //window.setPosition(sf::Vector2i(300, 50));
     sf::Mouse::setPosition(sf::Vector2i(sf::VideoMode::getDesktopMode().width / 2, 0));
     window.setFramerateLimit(300);
 }
@@ -1580,6 +1615,7 @@ void Game::updateLevel(bool isNextLevel) {
     movingLeft = false;
     movingUp = false;
     movingDown = false;
+    isBlack = true;
     fps = 0;
     isPause = 0;
     flicker.restart();
@@ -1749,7 +1785,7 @@ void Game::updateEnemyDeath(Enemy& enemy) {
             else if (randLadderEnemySpawn.empty() == false)
                 enemy.sprite1.setPosition(randLadderEnemySpawn.at(distribution(generator) % randLadderEnemySpawn.size()) * 30.0f + 15.0f, 15.0f - help);
             else
-                enemy.sprite1.setPosition(-30.0f, 0.0f);
+                enemy.sprite1.setPosition(-30.0f, 0);
             return;
         }
         counter++;
@@ -1853,10 +1889,12 @@ void Game::updateEnemyPickGold(Enemy& enemy) {
                 for (sf::Sprite& spr : goldSprites) { if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; } }
                 for (sf::Sprite& spr : holes) { if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; } }
                 for (sf::Sprite& spr : spritesWorkout) { if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; } }
+                for (sf::Sprite& spr : invisibleBlocks) { if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; } }
                 for (sf::Sprite& spr : spritesUD) {
-                    //if (sf::Vector2(spr.getGlobalBounds().left, spr.getGlobalBounds().top + 2000.0f) == sf::Vector2f(left, top)) { checkUp = true; break; }
+                    if (sf::Vector2(spr.getGlobalBounds().left, spr.getGlobalBounds().top + 2000.0f) == sf::Vector2f(left, top)) { checkUp = true; break; }
                     if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; }
                 }
+
                 if (checkUp == false) {
                     for (sf::Sprite& gold : levelSprites) {
                         if (gold.getGlobalBounds().getPosition() == enemy.goldSprite.getGlobalBounds().getPosition()) gold.setPosition(left, top);
@@ -1887,8 +1925,10 @@ void Game::updateEnemyPickGold(Enemy& enemy) {
                     for (sf::Sprite& spr : goldSprites) { if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; } }
                     for (sf::Sprite& spr : holes) { if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; } }
                     for (sf::Sprite& spr : spritesWorkout) { if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; } }
+                    for (sf::Sprite& spr : invisibleBlocks) { if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; } }
                     for (sf::Sprite& spr : spritesUD) {
                         if (sf::Vector2(spr.getGlobalBounds().left, spr.getGlobalBounds().top + 2000.0f) == sf::Vector2f(left, top)) { checkUp = true; break; }
+                        if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; }
                     }
                     if (checkUp == false) {
                         for (sf::Sprite& gold : levelSprites) {
@@ -1917,8 +1957,8 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
     lSide.setPosition(enemyLeft - help, enemyTop + help);
     rSide.setPosition(enemyLeft + 30.0f, enemyTop + help);
 
-    sf::RectangleShape uSide(sf::Vector2f(30.0f - 2 * help, help)), dSide(sf::Vector2f(30.0f - 2 * help, help));
-    uSide.setPosition(enemyLeft + help, enemyTop - help);
+    sf::RectangleShape uSide(sf::Vector2f(30.0f - 2 * help, 2 * help)), dSide(sf::Vector2f(30.0f - 2 * help, help));
+    uSide.setPosition(enemyLeft + help, enemyTop - 2 * help);
     dSide.setPosition(enemyLeft + help, enemyTop + 30.0f);
 
     sf::RectangleShape helpArea(sf::Vector2f(90.0f, 90.0f));
@@ -1929,7 +1969,10 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
         sf::FloatRect sprBounds = sprite.sprite1.getGlobalBounds();
         if (lSide.getGlobalBounds().intersects(sprBounds) && enemy.movingLeft) enemy.movingLeft = false;
         if (rSide.getGlobalBounds().intersects(sprBounds) && enemy.movingRight) enemy.movingRight = false;
-        if (uSide.getGlobalBounds().intersects(sprBounds) && enemy.movingUp) enemy.movingUp = false;
+        if (uSide.getGlobalBounds().intersects(sprBounds) && enemy.movingUp) {
+            enemy.movingUp = false;
+            return true;
+        }
         if (dSide.getGlobalBounds().intersects(sprBounds) && enemy.movingDown) enemy.movingDown = false;
     }
 
@@ -1980,7 +2023,7 @@ void Game::updateEnemies(sf::Time& deltaTime) {
     for (Enemy& enemy : enemies) {
         enemy.initMoves();
         setEnemyMove(enemy);
-       // enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp; enemy.movingDown = movingDown;
+        //enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp; enemy.movingDown = movingDown;
         updateEnemyDeath(enemy);
         updateEnemyPickGold(enemy);
         if (updateEnemiesCollisions(enemy, deltaTime) == true || enemy.updateCaught(deltaTime, sprite1)) continue;
@@ -2022,6 +2065,11 @@ bool Game::updateOnEnemy(sf::Time deltaTime) {
 
         sf::RectangleShape etop(sf::Vector2f(30.0f, 2 * help));
         etop.setPosition(enemyLeft, enemyTop);
+
+        bool isOnUD = false;
+        for (sf::Sprite& spr : spritesUD) {
+            if (spriteBounds.intersects(spr.getGlobalBounds())) isOnUD = true;
+        }
 
         if (under.getGlobalBounds().intersects(etop.getGlobalBounds()) && enemy.isFlyingTexture) {
 
@@ -2273,20 +2321,27 @@ void Game::setEnemyMove(Enemy& enemy) {
     sf::FloatRect enemyBounds = enemy.sprite1.getGlobalBounds();
     sf::FloatRect spriteBounds = sprite1.getGlobalBounds();
 
+    if (enemy.direction == 0) {
+        if (spriteBounds.left > enemyBounds.left)
+            enemy.direction = 1;
+        else if (spriteBounds.left < enemyBounds.left)
+            enemy.direction = -1;
+    }
+
     if (enemy.isCaught || enemy.isClimbed || isEnemyFlying(enemy.sprite1) || (enemyBounds.left == spriteBounds.left && enemy.isFlyingTexture)) {
         enemy.isDirectionChanged = false;
         enemy.direction = 0;
         return;
     }
 
-    if (spriteBounds.top > enemyBounds.top + help && isEnableEnemyDown(enemy)) {
+    if (spriteBounds.top > enemyBounds.top + help && isEnableEnemyDown(enemy) && enemy.isLadderDirectionChanged == false) {
         enemy.isDirectionChanged = false;
         enemy.direction = 0;
         enemy.movingDown = true;
         enemy.ladderDirection = -1;
         return;
 
-    } else if (spriteBounds.top < enemyBounds.top - help && isEnableEnemyUp(enemy)) {
+    } else if (spriteBounds.top < enemyBounds.top - help && isEnableEnemyUp(enemy) && enemy.isLadderDirectionChanged == false) {
         enemy.isDirectionChanged = false;
         enemy.direction = 0;
         enemy.movingUp = true;
@@ -2296,25 +2351,39 @@ void Game::setEnemyMove(Enemy& enemy) {
     } else if (spriteBounds.left > enemyBounds.left + help && isEnableEnemyRight(enemy) && enemy.isDirectionChanged == false) {
         enemy.movingRight = true;
         enemy.direction = 1;
+        enemy.isLadderDirectionChanged = false;
+        enemy.ladderDirection = 0;
         return;
 
     } else if (spriteBounds.left < enemyBounds.left - help && isEnableEnemyLeft(enemy) && enemy.isDirectionChanged == false) {
+        enemy.isLadderDirectionChanged = false;
+        enemy.ladderDirection = 0;
         enemy.movingLeft = true;
         enemy.direction = -1;
         return;
 
     } else {
 
-
+        if (enemy.ladderDirection == 1 && isEnableEnemyUp(enemy)) {
+            enemy.movingUp = true;
+            enemy.isLadderDirectionChanged = true;
+        } else if (enemy.ladderDirection == -1 && isEnableEnemyDown(enemy)) {
+            enemy.movingDown = true;
+            enemy.isLadderDirectionChanged = true;
+        }
 
         if (enemy.isDirectionChanged == false) {
             if (enemy.direction == 1) {
-                enemy.direction = -1;
-                enemy.movingLeft = true;
+                if (enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyRight(enemy) == false) {
+                    enemy.direction = -1;
+                    enemy.movingLeft = true;
+                }
                 enemy.isDirectionChanged = true;
             } else if (enemy.direction == -1) {
-                enemy.direction = 1;
-                enemy.movingRight = true;
+                if (enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyLeft(enemy) == false) {
+                    enemy.direction = 1;
+                    enemy.movingRight = true;
+                }
                 enemy.isDirectionChanged = true;
             }
         } else {
@@ -2328,8 +2397,6 @@ void Game::setEnemyMove(Enemy& enemy) {
         }
 
     }
-
-
 
 }
 

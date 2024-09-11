@@ -249,6 +249,9 @@ private:
 	bool isEnableEnemyLeft(Enemy& enemy);
 	bool isEnableEnemyUp(Enemy& enemy);
 	bool isEnableEnemyDown(Enemy& enemy);
+
+	std::vector<sf::Sprite> invisibleBlocks;
+	bool isBlack;
 };
 
 #endif
