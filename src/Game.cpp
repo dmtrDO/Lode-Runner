@@ -85,11 +85,12 @@ void Game::update() {
 }
 
 void Game::draw() {
-
     window.clear(sf::Color::Black);
-
     for (int i = 0; i < levelSprites.size(); i++) {
         window.draw(levelSprites[i]);
+    }
+    for (sf::Sprite& gold : goldSprites) {
+        window.draw(gold);
     }
 
     if (isStart == false) {
@@ -105,11 +106,9 @@ void Game::draw() {
     }
 
     window.draw(sprite1);
-
     for (Enemy& enemy : enemies) {
         window.draw(enemy.sprite1);
     }
-
     for (sf::Sprite& sprite : killedSprites) {
         window.draw(sprite);
     }
@@ -128,7 +127,6 @@ void Game::draw() {
         greenBlueOpacity = 0;
     }
     window.draw(text);
-
     if (isWin || isRestart) drawTransition();
 
     window.display();
@@ -206,7 +204,7 @@ void Game::handleText(sf::Keyboard::Key key) {
 void Game::updateFPS() {
     fps++;
     if (framesClock.getElapsedTime().asSeconds() >= 1.0f) {
-        std::cout << fps << "\n";
+        //std::cout << fps << "\n";
         framesClock.restart();
         fpsArr.push_back(fps);
         if (fpsArr.size() == 5) {
@@ -651,7 +649,7 @@ void Game::setSprites(int level) {
         if (enemy == true) {
             enemies.at(enemyCounter).sprite1.setPosition(sprite.getGlobalBounds().left + 15, sprite.getGlobalBounds().top + 15);
             enemyCounter++;
-        } else if (voidBlock == false) levelSprites.push_back(sprite);
+        } else if (voidBlock == false && goldSpritesBool == false) levelSprites.push_back(sprite);
 
         if (spaced) spaceBlocks.push_back(sprite);
         if (goldSpritesBool) goldSprites.push_back(sprite);
@@ -1824,14 +1822,7 @@ void Game::updateGold() {
         sf::FloatRect intersection;
         if (sprite1.getGlobalBounds().intersects(goldSprites[i].getGlobalBounds(), intersection)) {
             float area = intersection.width * intersection.height;
-            if (area >= 550) {
-                for (int j = 0; j < levelSprites.size(); j++) {
-                    if (goldSprites[i].getGlobalBounds().getPosition() == levelSprites[j].getGlobalBounds().getPosition()) {
-                        levelSprites[j].setTexture(texture20);
-                    }
-                }
-                goldSprites.erase(goldSprites.begin() + i);
-            }
+            if (area >= 550) goldSprites.erase(goldSprites.begin() + i);     
         }
     }
 }
@@ -1858,14 +1849,8 @@ void Game::updateEnemyPickGold(Enemy& enemy) {
                 std::uniform_int_distribution<int> distribution;
                 int fortunate = distribution(generator) % enemyPercent;
                 if (fortunate == 0 && enemy.pickUpInterval.getElapsedTime().asSeconds() > 2.0f) {
-                    for (sf::Sprite& sprite : levelSprites) {
-                        if (sprite.getGlobalBounds().getPosition() == gold.getGlobalBounds().getPosition()) {
-                            sprite.setPosition(sprite.getGlobalBounds().left, sprite.getGlobalBounds().top - 2000.0f);
-                            enemy.goldSprite.setPosition(sprite.getGlobalBounds().left, sprite.getGlobalBounds().top);
-                            break;
-                        }
-                    }
                     gold.setPosition(gold.getGlobalBounds().left, gold.getGlobalBounds().top - 2000.0f);
+                    enemy.goldSprite.setPosition(gold.getGlobalBounds().getPosition());
                     enemy.pickedGoldTime = distribution(generator) % 40 + 5;
                     enemy.pickedGoldTimer.restart();
                 }
@@ -1896,9 +1881,6 @@ void Game::updateEnemyPickGold(Enemy& enemy) {
                 }
 
                 if (checkUp == false) {
-                    for (sf::Sprite& gold : levelSprites) {
-                        if (gold.getGlobalBounds().getPosition() == enemy.goldSprite.getGlobalBounds().getPosition()) gold.setPosition(left, top);
-                    }
                     for (sf::Sprite& gold : goldSprites) {
                         if (gold.getGlobalBounds().getPosition() == enemy.goldSprite.getGlobalBounds().getPosition()) gold.setPosition(left, top);
                     }
@@ -1931,9 +1913,6 @@ void Game::updateEnemyPickGold(Enemy& enemy) {
                         if (spr.getGlobalBounds().getPosition() == sf::Vector2f(left, top)) { checkUp = true; break; }
                     }
                     if (checkUp == false) {
-                        for (sf::Sprite& gold : levelSprites) {
-                            if (gold.getGlobalBounds().getPosition() == enemy.goldSprite.getGlobalBounds().getPosition()) gold.setPosition(left, top);
-                        }
                         for (sf::Sprite& gold : goldSprites) {
                             if (gold.getGlobalBounds().getPosition() == enemy.goldSprite.getGlobalBounds().getPosition()) gold.setPosition(left, top);
                         }
@@ -2283,8 +2262,9 @@ bool Game::getIsEnableEnemyDown(Enemy& enemy) {
     dSide.setPosition(enemyBounds.left + help, enemyBounds.top + 30.0f);
 
     bool isWorking = false;
+    sf::FloatRect intersection;
     for (sf::Sprite& work : spritesWorkout) {
-        if (enemyBounds.intersects(work.getGlobalBounds()) && work.getGlobalBounds().top == enemyBounds.top) {
+        if (enemyBounds.intersects(work.getGlobalBounds(), intersection) && work.getGlobalBounds().top == enemyBounds.top && intersection.width > 30.0f - help) {
             isWorking = true;
             break;
         }
@@ -2299,7 +2279,6 @@ bool Game::getIsEnableEnemyDown(Enemy& enemy) {
 
     if (isWorking) return true;
 
-    sf::FloatRect intersection;
     for (sf::Sprite& ladder : spritesUD) {
         if (dSide.getGlobalBounds().intersects(ladder.getGlobalBounds(), intersection) && intersection.width > 15.0f) return true;
     }
