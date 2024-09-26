@@ -23,6 +23,10 @@ public:
 	bool isDirectionChanged;
 	int ladderDirection;
 	bool isLadderDirectionChanged;
+	sf::Clock directionClock;
+	float currPosX;
+	int framesX;
+	bool isLadderException;
 
 	bool movingLeft;
 	bool movingRight;

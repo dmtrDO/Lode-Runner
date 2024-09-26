@@ -547,7 +547,7 @@ bool Enemy::updateFly() {
 					break;
 				}
 			}
-			if (work) return false;
+			if (work) break;
 			int counts = 0;
 			for (sf::Sprite& spr : forFly) {
 				if (rectBounds.intersects(spr.getGlobalBounds()) && spr.getGlobalBounds().getPosition() != sprBounds.getPosition()) {
@@ -752,6 +752,9 @@ bool Enemy::updateFly() {
 }
 
 void Enemy::initVariables() {
+	isLadderException = false;
+	framesX = 0;
+	currPosX = 0;
 	tempIgnore = false;
 	windowWidth = 28;
 	windowHeight = 17;

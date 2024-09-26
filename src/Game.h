@@ -249,6 +249,8 @@ private:
 	bool getIsEnableEnemyLeft(Enemy& enemy);
 	bool getIsEnableEnemyUp(Enemy& enemy);
 	bool getIsEnableEnemyDown(Enemy& enemy);
+	bool getIsEnableEnemyRightOnLadder(Enemy& enemy);
+	bool getIsEnableEnemyLeftOnLadder(Enemy& enemy);
 
 	std::vector<sf::Sprite> invisibleBlocks;
 	bool isBlack;
