@@ -2004,19 +2004,13 @@ void Game::updateEnemies(sf::Time& deltaTime) {
 
     if (isStart == false) return;
 
-    int cnt = 0;
-
     for (Enemy& enemy : enemies) {
-        
-        cnt++;
-        if (cnt == 2) break;
-
         enemy.initMoves();
         setEnemyMove(enemy);
        // enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp; enemy.movingDown = movingDown;
         updateEnemyDeath(enemy);
         updateEnemyPickGold(enemy);
-        if (/*updateEnemiesCollisions(enemy, deltaTime) == true ||*/ enemy.updateCaught(deltaTime, sprite1)) continue;
+        if (updateEnemiesCollisions(enemy, deltaTime) == true || enemy.updateCaught(deltaTime, sprite1)) continue;
         if (enemy.updateFly()) {
             enemy.sprite1.move(0, fabs(enemy.mainSpeed) * deltaTime.asSeconds());
             enemy.sprite1.setTexture(texture13);
@@ -2331,7 +2325,7 @@ bool Game::getIsEnableEnemyLeftOnLadder(Enemy& enemy) {
     int top = 30;
     if (int(enemyBounds.top) % 30 == 0)
         top += int(enemyBounds.top);
-    else if (int(enemyBounds.top + 1.0f) % 30)
+    else if (int(enemyBounds.top + 1.0f) % 30 == 0)
         top += int(enemyBounds.top + 1.0f);
 
     bool isFloor = false;
@@ -2380,7 +2374,7 @@ bool Game::getIsEnableEnemyRightOnLadder(Enemy& enemy) {
     int top = 30;
     if (int(enemyBounds.top) % 30 == 0)
         top += int(enemyBounds.top);
-    else if (int(enemyBounds.top + 1.0f) % 30)
+    else if (int(enemyBounds.top + 1.0f) % 30 == 0)
         top += int(enemyBounds.top + 1.0f);
 
     bool isFloor = false;
@@ -2423,23 +2417,58 @@ void Game::setEnemyMove(Enemy& enemy) {
     bool isEnableEnemyRightOnLadder = getIsEnableEnemyRightOnLadder(enemy);
 
     sf::FloatRect enemyBounds = enemy.sprite1.getGlobalBounds();
-    sf::FloatRect spriteBounds = sprite1.getGlobalBounds();
+    sf::FloatRect spriteBounds = sprite1.getGlobalBounds(); 
 
-    std::cout << enemy.ladderDirection;
+    if (std::fmod(std::abs(enemyBounds.top), 30) < 0.00001) {
+        enemy.yInterval = 0;
+        enemy.frameY = 0;
+    } else {
+        if (enemy.frameY == 0) {
+            enemy.posY = enemyBounds.top;
+        }
+        enemy.yInterval = std::fabs(enemy.posY - enemyBounds.top);
+        enemy.frameY++;
+    }
 
     if (enemy.direction == 0 && enemyBounds.left != sprite1.getGlobalBounds().left) {
         if (spriteBounds.left > enemyBounds.left)
             enemy.direction = 1;
         else if (spriteBounds.left < enemyBounds.left)
             enemy.direction = -1;
-    }
+    } 
 
-    if (enemy.isCaught || enemy.isClimbed || isEnemyFlying || (enemyBounds.left == spriteBounds.left && enemy.isFlyingTexture)) {
+    if (isEnemyFlying || (enemyBounds.left == spriteBounds.left && enemy.isFlyingTexture)) {
         enemy.isDirectionChanged = false;
         enemy.direction = 0;
         enemy.isLadderDirectionChanged = false;
         enemy.ladderDirection = 0;
         return;
+    }
+
+    if (enemy.isLadderDirectionChanged == false) {
+        if (isEnableEnemyUp == true && isEnableEnemyRight == false && enemy.direction == 1 
+            && isEnableEnemyDown == false && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001 
+            || isEnableEnemyUp == true && isEnableEnemyRight == false && enemy.direction == 1
+            && isEnableEnemyDown == true && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001 && int(enemyBounds.top) == int(spriteBounds.top)
+
+            || isEnableEnemyUp == true && isEnableEnemyLeft == false && enemy.direction == -1 
+            && isEnableEnemyDown == false && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001
+            || isEnableEnemyUp == true && isEnableEnemyLeft == false && enemy.direction == -1
+            && isEnableEnemyDown == true && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001 && int(enemyBounds.top) == int(spriteBounds.top)) {
+            enemy.isLadderDirectionChanged = true;
+            enemy.ladderDirection = 1;
+            enemy.movingUp = true;
+            return;
+        }
+        if (isEnableEnemyDown == true && isEnableEnemyRight == false && enemy.direction == 1
+            && isEnableEnemyUp == false && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001
+            || isEnableEnemyDown == true && isEnableEnemyLeft == false && enemy.direction == -1
+            && isEnableEnemyUp == false && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001) {
+            enemy.isLadderDirectionChanged = true;
+            enemy.ladderDirection = -1;
+            enemy.movingDown = true;
+            return;
+        }
     }
 
     if (enemy.isLadderException) {
@@ -2476,7 +2505,8 @@ void Game::setEnemyMove(Enemy& enemy) {
 
     if ((enemy.direction == 1 && isEnableEnemyRightOnLadder == true && isEnableEnemyRight ||
         enemy.direction == -1 && isEnableEnemyLeftOnLadder == true && isEnableEnemyLeft) 
-        && enemy.ladderDirection != 0 && enemy.isDirectionChanged == false) {
+        && enemy.ladderDirection != 0 && enemy.isDirectionChanged == false && isEnableEnemyUp == true && isEnableEnemyDown == true
+        && enemy.yInterval > help) {
         enemy.isLadderException = true;
         return;
     }
@@ -2579,22 +2609,15 @@ void Game::setEnemyMove(Enemy& enemy) {
 
         if (enemy.isDirectionChanged == false) {
             if (enemy.direction == 1) {
-                if ((enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyRight == false) &&
-                    enemy.directionClock.getElapsedTime().asSeconds() > help / 2) {
-
+                if (enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyRight == false) {
                     enemy.direction = -1;
                     enemy.movingLeft = true;
-                    enemy.directionClock.restart();
                 }
                 enemy.isDirectionChanged = true;
-
             } else if (enemy.direction == -1) {
-                if ((enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyLeft == false) &&
-                    enemy.directionClock.getElapsedTime().asSeconds() > help / 2) {
-
+                if (enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyLeft == false) {
                     enemy.direction = 1;
                     enemy.movingRight = true;
-                    enemy.directionClock.restart();
                 }
                 enemy.isDirectionChanged = true;
             }

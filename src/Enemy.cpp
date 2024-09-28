@@ -752,6 +752,9 @@ bool Enemy::updateFly() {
 }
 
 void Enemy::initVariables() {
+	yInterval = 0;
+	posY = 0;
+	frameY = 0;
 	isLadderException = false;
 	framesX = 0;
 	currPosX = 0;

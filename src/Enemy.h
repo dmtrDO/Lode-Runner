@@ -27,6 +27,9 @@ public:
 	float currPosX;
 	int framesX;
 	bool isLadderException;
+	float yInterval;
+	float posY;
+	int frameY;
 
 	bool movingLeft;
 	bool movingRight;
