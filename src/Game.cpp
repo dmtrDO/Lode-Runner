@@ -204,7 +204,6 @@ void Game::handleText(sf::Keyboard::Key key) {
 void Game::updateFPS() {
     fps++;
     if (framesClock.getElapsedTime().asSeconds() >= 1.0f) {
-        //std::cout << fps << "\n";
         framesClock.restart();
         fpsArr.push_back(fps);
         if (fpsArr.size() == 5) {
@@ -1274,12 +1273,8 @@ void Game::setWindow() {
     window.create(sf::VideoMode(windowWidth * 30, windowHeight * 30 + 20), "Lode Runner");
     window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width - 200, sf::VideoMode::getDesktopMode().height - 200));
     window.setPosition(sf::Vector2i(100, 50));
-
-    window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width - 400, sf::VideoMode::getDesktopMode().height - 200));
-    window.setPosition(sf::Vector2i(300, 50));
-
     sf::Mouse::setPosition(sf::Vector2i(sf::VideoMode::getDesktopMode().width / 2, 0));
-    window.setFramerateLimit(200);
+    window.setFramerateLimit(400);
 }
 
 void Game::setIcon() {
@@ -1944,6 +1939,10 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
     uSide.setPosition(enemyLeft + help, enemyTop - 2 * help);
     dSide.setPosition(enemyLeft + help, enemyTop + 30.0f);
 
+    sf::RectangleShape lSide(sf::Vector2f(help, 30.0f - 2 * help)), rSide(sf::Vector2f(help, 30.0f - 2 * help));
+    lSide.setPosition(enemyLeft - help, enemyTop + help);
+    rSide.setPosition(enemyLeft + 30.0f, enemyTop + help);
+
     sf::RectangleShape helpArea(sf::Vector2f(90.0f, 90.0f));
     helpArea.setOrigin(helpArea.getLocalBounds().width / 2, helpArea.getLocalBounds().height / 2);
     helpArea.setPosition(enemyLeft + 15, enemyTop + 15);
@@ -1954,8 +1953,10 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
 
         sf::FloatRect sprBounds = sprite.sprite1.getGlobalBounds();
 
+        if (lSide.getGlobalBounds().intersects(sprBounds) && enemy.movingLeft) enemy.movingLeft = false;
+        if (rSide.getGlobalBounds().intersects(sprBounds) && enemy.movingRight) enemy.movingRight = false;
+
         if (dSide.getGlobalBounds().intersects(sprBounds) && sprite.isCaught == false && enemy.isFlyingTexture == true) {
-            //enemy.sprite1.setPosition(enemyLeft + 15.0f, sprBounds.top - 30.0f + 15.0f);
             enemy.isFromFly = true;
             enemy.isFlyingTexture = true;
             return true;
@@ -1971,9 +1972,15 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
             return true;
         }
         if (uSide.getGlobalBounds().intersects(sprBounds) && enemy.isCaught) return true;
+        if ((lSide.getGlobalBounds().intersects(sprBounds) && enemy.caughtDirection == -1 ||
+            rSide.getGlobalBounds().intersects(sprBounds) && enemy.caughtDirection == 1)
+            && enemy.isClimbed) {
+            enemy.isClimbed = false;
+            return true;
+        }
     }
 
-    return false;
+    return false;   
 
 }
 
@@ -1989,7 +1996,6 @@ void Game::updateEnemies(sf::Time& deltaTime) {
     for (Enemy& enemy : enemies) {
         enemy.initMoves();
         setEnemyMove(enemy);
-       // enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp; enemy.movingDown = movingDown;
         updateEnemyDeath(enemy);
         updateEnemyPickGold(enemy);
         if (updateEnemiesCollisions(enemy, deltaTime) == true || enemy.updateCaught(deltaTime, sprite1)) continue;
