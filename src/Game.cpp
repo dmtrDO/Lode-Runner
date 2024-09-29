@@ -1273,6 +1273,10 @@ void Game::setWindow() {
     window.create(sf::VideoMode(windowWidth * 30, windowHeight * 30 + 20), "Lode Runner");
     window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width - 200, sf::VideoMode::getDesktopMode().height - 200));
     window.setPosition(sf::Vector2i(100, 50));
+
+    //window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width - 400, sf::VideoMode::getDesktopMode().height - 200));
+    //window.setPosition(sf::Vector2i(300, 50));
+
     sf::Mouse::setPosition(sf::Vector2i(sf::VideoMode::getDesktopMode().width / 2, 0));
     window.setFramerateLimit(400);
 }
@@ -1947,6 +1951,14 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
     helpArea.setOrigin(helpArea.getLocalBounds().width / 2, helpArea.getLocalBounds().height / 2);
     helpArea.setPosition(enemyLeft + 15, enemyTop + 15);
 
+    bool isLadder = false;
+    for (sf::Sprite& ladder : spritesUD) {
+        if (enemyBounds.intersects(ladder.getGlobalBounds())) {
+            isLadder = true;
+            break;
+        }
+    }
+
     for (Enemy& sprite : enemies) {
 
         if (!helpArea.getGlobalBounds().intersects(sprite.sprite1.getGlobalBounds())) continue;
@@ -1957,6 +1969,7 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
         if (rSide.getGlobalBounds().intersects(sprBounds) && enemy.movingRight) enemy.movingRight = false;
 
         if (dSide.getGlobalBounds().intersects(sprBounds) && sprite.isCaught == false && enemy.isFlyingTexture == true) {
+            if (isLadder == false) enemy.sprite1.setPosition(enemyLeft + 15.0f, sprBounds.top - 30.0f + 15.0f);
             enemy.isFromFly = true;
             enemy.isFlyingTexture = true;
             return true;
@@ -2446,7 +2459,6 @@ void Game::setEnemyMove(Enemy& enemy) {
                 enemy.ladderDirection = 0;
                 enemy.framesX = 0;
                 enemy.isLadderException = false;
-                enemy.isDirectionChanged = true;
             }
             return;
         } else if (enemy.direction == -1) {
@@ -2461,7 +2473,6 @@ void Game::setEnemyMove(Enemy& enemy) {
                 enemy.ladderDirection = 0;
                 enemy.framesX = 0;
                 enemy.isLadderException = false;
-                enemy.isDirectionChanged = true;
             }
             return;
         }
@@ -2600,14 +2611,14 @@ void Game::setEnemyMove(Enemy& enemy) {
         if (enemy.isDirectionChanged == false) {
             if (enemy.direction == 1) {
                 if ((enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyRight == false)
-                    && enemy.directionClock.getElapsedTime().asSeconds() > 0.3) {
+                    && enemy.directionClock.getElapsedTime().asSeconds() > 0.2) {
                     enemy.direction = -1;
                     enemy.movingLeft = true;
                 }
                 enemy.isDirectionChanged = true;
             } else if (enemy.direction == -1) {
                 if ((enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyLeft == false)
-                    && enemy.directionClock.getElapsedTime().asSeconds() > 0.3) {
+                    && enemy.directionClock.getElapsedTime().asSeconds() > 0.2) {
                     enemy.direction = 1;
                     enemy.movingRight = true;
                 }
@@ -2618,13 +2629,13 @@ void Game::setEnemyMove(Enemy& enemy) {
                 enemy.movingRight = true;
                 if (isEnableEnemyRight == false) {
                     enemy.isDirectionChanged = false;
-                    if (enemy.directionClock.getElapsedTime().asSeconds() > 0.3) enemy.directionClock.restart();
+                    if (enemy.directionClock.getElapsedTime().asSeconds() > 0.2) enemy.directionClock.restart();
                 }
             } else if (enemy.direction == -1) {
                 enemy.movingLeft = true;
                 if (isEnableEnemyLeft == false) {
                     enemy.isDirectionChanged = false;
-                    if (enemy.directionClock.getElapsedTime().asSeconds() > 0.3) enemy.directionClock.restart();
+                    if (enemy.directionClock.getElapsedTime().asSeconds() > 0.2) enemy.directionClock.restart();
                 }
             }
         }
