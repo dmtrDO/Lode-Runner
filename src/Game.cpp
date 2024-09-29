@@ -836,6 +836,9 @@ bool Game::updateFly() {
                 sprite1.setPosition(spriteLeft + 15, sprBounds.top + 15);
             if (movingDown) {
                 if (movingUp) return false;
+                for (Enemy& enemy : enemies) {
+                    if (rectBounds.intersects(enemy.sprite1.getGlobalBounds())) return false;
+                }
                 for (sf::Sprite spr : forFly) {
                     sf::FloatRect area;
                     if (rectBounds.intersects(spr.getGlobalBounds(), area) && area.width < 5 * help) {
@@ -1941,7 +1944,7 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
     lSide.setPosition(enemyLeft - help, enemyTop + help);
     rSide.setPosition(enemyLeft + 30.0f, enemyTop + help);
 
-    sf::RectangleShape uSide(sf::Vector2f(30.0f - 2 * help, 2 * help)), dSide(sf::Vector2f(30.0f - 2 * help, help));
+    sf::RectangleShape uSide(sf::Vector2f(30.0f - 2 * help, 2 * help)), dSide(sf::Vector2f(30.0f - 2 * help, 2 * help));
     uSide.setPosition(enemyLeft + help, enemyTop - 2 * help);
     dSide.setPosition(enemyLeft + help, enemyTop + 30.0f);
 
@@ -2007,7 +2010,7 @@ void Game::updateEnemies(sf::Time& deltaTime) {
     for (Enemy& enemy : enemies) {
         enemy.initMoves();
         setEnemyMove(enemy);
-       // enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp; enemy.movingDown = movingDown;
+        enemy.movingLeft = movingLeft; enemy.movingRight = movingRight; enemy.movingUp = movingUp; enemy.movingDown = movingDown;
         updateEnemyDeath(enemy);
         updateEnemyPickGold(enemy);
         if (updateEnemiesCollisions(enemy, deltaTime) == true || enemy.updateCaught(deltaTime, sprite1)) continue;
@@ -2445,32 +2448,6 @@ void Game::setEnemyMove(Enemy& enemy) {
         return;
     }
 
-    if (enemy.isLadderDirectionChanged == false) {
-        if (isEnableEnemyUp == true && isEnableEnemyRight == false && enemy.direction == 1 
-            && isEnableEnemyDown == false && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001 
-            || isEnableEnemyUp == true && isEnableEnemyRight == false && enemy.direction == 1
-            && isEnableEnemyDown == true && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001 && int(enemyBounds.top) == int(spriteBounds.top)
-
-            || isEnableEnemyUp == true && isEnableEnemyLeft == false && enemy.direction == -1 
-            && isEnableEnemyDown == false && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001
-            || isEnableEnemyUp == true && isEnableEnemyLeft == false && enemy.direction == -1
-            && isEnableEnemyDown == true && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001 && int(enemyBounds.top) == int(spriteBounds.top)) {
-            enemy.isLadderDirectionChanged = true;
-            enemy.ladderDirection = 1;
-            enemy.movingUp = true;
-            return;
-        }
-        if (isEnableEnemyDown == true && isEnableEnemyRight == false && enemy.direction == 1
-            && isEnableEnemyUp == false && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001
-            || isEnableEnemyDown == true && isEnableEnemyLeft == false && enemy.direction == -1
-            && isEnableEnemyUp == false && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001) {
-            enemy.isLadderDirectionChanged = true;
-            enemy.ladderDirection = -1;
-            enemy.movingDown = true;
-            return;
-        }
-    }
-
     if (enemy.isLadderException) {
         if (enemy.direction == 1) {
             enemy.movingRight = true;
@@ -2484,6 +2461,7 @@ void Game::setEnemyMove(Enemy& enemy) {
                 enemy.ladderDirection = 0;
                 enemy.framesX = 0;
                 enemy.isLadderException = false;
+                enemy.isDirectionChanged = true;
             }
             return;
         } else if (enemy.direction == -1) {
@@ -2498,6 +2476,7 @@ void Game::setEnemyMove(Enemy& enemy) {
                 enemy.ladderDirection = 0;
                 enemy.framesX = 0;
                 enemy.isLadderException = false;
+                enemy.isDirectionChanged = true;
             }
             return;
         }
@@ -2591,6 +2570,32 @@ void Game::setEnemyMove(Enemy& enemy) {
 
     }
 
+    if (enemy.isLadderDirectionChanged == false) {
+        if (isEnableEnemyUp == true && isEnableEnemyRight == false && enemy.direction == 1
+            && isEnableEnemyDown == false && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001
+            || isEnableEnemyUp == true && isEnableEnemyRight == false && enemy.direction == 1
+            && isEnableEnemyDown == true && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001 && int(enemyBounds.top) == int(spriteBounds.top)
+
+            || isEnableEnemyUp == true && isEnableEnemyLeft == false && enemy.direction == -1
+            && isEnableEnemyDown == false && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001
+            || isEnableEnemyUp == true && isEnableEnemyLeft == false && enemy.direction == -1
+            && isEnableEnemyDown == true && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001 && int(enemyBounds.top) == int(spriteBounds.top)) {
+            enemy.isLadderDirectionChanged = true;
+            enemy.ladderDirection = 1;
+            enemy.movingUp = true;
+            return;
+        }
+        if (isEnableEnemyDown == true && isEnableEnemyRight == false && enemy.direction == 1
+            && isEnableEnemyUp == false && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001
+            || isEnableEnemyDown == true && isEnableEnemyLeft == false && enemy.direction == -1
+            && isEnableEnemyUp == false && std::fmod(std::abs(enemyBounds.left), 30) > 0.00001) {
+            enemy.isLadderDirectionChanged = true;
+            enemy.ladderDirection = -1;
+            enemy.movingDown = true;
+            return;
+        }
+    }
+
     if (spriteBounds.left > enemyBounds.left + help && isEnableEnemyRight && enemy.isDirectionChanged == false) {
         enemy.movingRight = true;
         enemy.direction = 1;
@@ -2609,13 +2614,15 @@ void Game::setEnemyMove(Enemy& enemy) {
 
         if (enemy.isDirectionChanged == false) {
             if (enemy.direction == 1) {
-                if (enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyRight == false) {
+                if ((enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyRight == false)
+                    && enemy.directionClock.getElapsedTime().asSeconds() > 0.3) {
                     enemy.direction = -1;
                     enemy.movingLeft = true;
                 }
                 enemy.isDirectionChanged = true;
             } else if (enemy.direction == -1) {
-                if (enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyLeft == false) {
+                if ((enemy.sprite1.getScale().x != sprite1.getScale().x || isEnableEnemyLeft == false)
+                    && enemy.directionClock.getElapsedTime().asSeconds() > 0.3) {
                     enemy.direction = 1;
                     enemy.movingRight = true;
                 }
@@ -2624,10 +2631,16 @@ void Game::setEnemyMove(Enemy& enemy) {
         } else {
             if (enemy.direction == 1) {
                 enemy.movingRight = true;
-                if (isEnableEnemyRight == false) enemy.isDirectionChanged = false;
+                if (isEnableEnemyRight == false) {
+                    enemy.isDirectionChanged = false;
+                    if (enemy.directionClock.getElapsedTime().asSeconds() > 0.3) enemy.directionClock.restart();
+                }
             } else if (enemy.direction == -1) {
                 enemy.movingLeft = true;
-                if (isEnableEnemyLeft == false) enemy.isDirectionChanged = false;
+                if (isEnableEnemyLeft == false) {
+                    enemy.isDirectionChanged = false;
+                    if (enemy.directionClock.getElapsedTime().asSeconds() > 0.3) enemy.directionClock.restart();
+                }
             }
         }
 
