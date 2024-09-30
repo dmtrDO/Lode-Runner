@@ -208,11 +208,41 @@ void Game::updateFPS() {
         fpsArr.push_back(fps);
         if (fpsArr.size() == 5) {
             int average = 0;
-            for (float value : fpsArr) {
-                average += value;
-            }
+            for (float value : fpsArr) average += value;
             average /= fpsArr.size();
-            if (average < 100) showError(L"Too few frames per second for playing");
+            if (average > 100) {
+                transitionSpeed = 4;
+                opacity = 4;
+                help = 1.0f;
+            } else if (average <= 100 && average > 90) {
+                transitionSpeed = 6;
+                opacity = 6;
+                help = 1.5f;
+            } else if (average <= 90 && average > 80) {
+                transitionSpeed = 8;
+                opacity = 8;
+                help = 2.5f;
+            } else if (average <= 80 && average > 70) {
+                transitionSpeed = 10;
+                opacity = 10;
+                help = 3.0f;
+            } else if (average <= 70 && average > 60) {
+                transitionSpeed = 12;
+                opacity = 12;
+                help = 3.5f;
+            } else if (average <= 60 && average > 50) {
+                transitionSpeed = 14;
+                opacity = 14;
+                help = 4.0f;
+            } else if (average <= 50 && average> 40) {
+                transitionSpeed = 16;
+                opacity = 16;
+                help = 4.5f;
+            } else if (average <= 40 && average > 30) {
+                transitionSpeed = 18;
+                opacity = 18;
+                help = 5.0f;
+            } else showError(L"Too few frames per second for playing");
             fpsArr.clear();
         }
         fps = 0;
@@ -1274,8 +1304,8 @@ void Game::setWindow() {
     window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width - 200, sf::VideoMode::getDesktopMode().height - 200));
     window.setPosition(sf::Vector2i(100, 50));
 
-    //window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width - 400, sf::VideoMode::getDesktopMode().height - 200));
-    //window.setPosition(sf::Vector2i(300, 50));
+    /*window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width - 400, sf::VideoMode::getDesktopMode().height - 200));
+    window.setPosition(sf::Vector2i(300, 50));*/
 
     sf::Mouse::setPosition(sf::Vector2i(sf::VideoMode::getDesktopMode().width / 2, 0));
     window.setFramerateLimit(400);
@@ -1789,7 +1819,7 @@ void Game::updateEnemyDeath(Enemy& enemy) {
                 enemy.sprite1.setPosition(randEnemySpawnNums.at(distribution(generator) % randEnemySpawnNums.size()) * 30.0f + 15.0f, 15.0f - help);
             else if (randLadderEnemySpawn.empty() == false)
                 enemy.sprite1.setPosition(randLadderEnemySpawn.at(distribution(generator) % randLadderEnemySpawn.size()) * 30.0f + 15.0f, 15.0f - help);
-            else
+            else 
                 enemy.sprite1.setPosition(-30.0f, 0);
             return;
         }
@@ -1959,6 +1989,14 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
         }
     }
 
+    bool isInHole = false;
+    for (sf::Sprite& hole : holes) {
+        if (enemyBounds.intersects(hole.getGlobalBounds())) {
+            isInHole = true;
+            break;
+        }
+    }
+
     for (Enemy& sprite : enemies) {
 
         if (!helpArea.getGlobalBounds().intersects(sprite.sprite1.getGlobalBounds())) continue;
@@ -1968,8 +2006,18 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
         if (lSide.getGlobalBounds().intersects(sprBounds) && enemy.movingLeft) enemy.movingLeft = false;
         if (rSide.getGlobalBounds().intersects(sprBounds) && enemy.movingRight) enemy.movingRight = false;
 
+        if (dSide.getGlobalBounds().intersects(sprBounds) && sprite.isCaught == false && sprite.isEnableMove == false) {
+            if (enemyTop != sprBounds.top - 30.0f && enemy.isFlyingTexture)
+                enemy.sprite1.setPosition(enemyLeft + 15.0f, sprBounds.top - 30.0f + 15.0f);
+            if (enemy.updateCaught(deltaTime, sprite1)) return true;
+            enemy.updateMoveLR(deltaTime);
+            enemy.updateMoveUD(deltaTime);
+            if (enemy.isFromFly) enemy.sprite1.setTexture(texture13);
+            return true;
+        }
+
         if (dSide.getGlobalBounds().intersects(sprBounds) && sprite.isCaught == false && enemy.isFlyingTexture == true) {
-            if (isLadder == false) enemy.sprite1.setPosition(enemyLeft + 15.0f, sprBounds.top - 30.0f + 15.0f);
+            if (isLadder == false && isInHole == false) enemy.sprite1.setPosition(enemyLeft + 15.0f, sprBounds.top - 30.0f + 15.0f);
             enemy.isFromFly = true;
             enemy.isFlyingTexture = true;
             return true;
@@ -1984,6 +2032,7 @@ bool Game::updateEnemiesCollisions(Enemy& enemy, sf::Time deltaTime) {
             if (enemy.isFromFly) enemy.sprite1.setTexture(texture13);
             return true;
         }
+
         if (uSide.getGlobalBounds().intersects(sprBounds) && enemy.isCaught) return true;
         if ((lSide.getGlobalBounds().intersects(sprBounds) && enemy.caughtDirection == -1 ||
             rSide.getGlobalBounds().intersects(sprBounds) && enemy.caughtDirection == 1)
@@ -2005,7 +2054,6 @@ void Game::updateEnemies(sf::Time& deltaTime) {
     Enemy::spritesWorkout = spritesWorkout;
 
     if (isStart == false) return;
-
     for (Enemy& enemy : enemies) {
         enemy.initMoves();
         setEnemyMove(enemy);
@@ -2184,6 +2232,9 @@ bool Game::getIsEnemyFlying(sf::Sprite& enemy) {
     sf::RectangleShape under(sf::Vector2f(30.0f, help));
     under.setPosition(enemyBounds.left, enemyBounds.top + 30.0f);
 
+    sf::RectangleShape helpArea(sf::Vector2f(30.0f, help));
+    helpArea.setPosition(enemyBounds.left, enemyBounds.top + 30);
+
     for (sf::Sprite& ladder : spritesUD) {
         if (enemyBounds.intersects(ladder.getGlobalBounds())) return false;
     }
@@ -2195,7 +2246,29 @@ bool Game::getIsEnemyFlying(sf::Sprite& enemy) {
         if (under.getGlobalBounds().intersects(platformBounds) && !enemyBounds.intersects(platformBounds)) return false;
     }
     for (Enemy& esprite : enemies) {
-        if (esprite.isCaught && esprite.isFlyingTexture && under.getGlobalBounds().intersects(esprite.sprite1.getGlobalBounds())) return false;
+        if (helpArea.getGlobalBounds().intersects(esprite.sprite1.getGlobalBounds()) == false) continue;
+
+        sf::FloatRect espriteBounds = esprite.sprite1.getGlobalBounds();
+
+        bool isLadder = false;
+        for (sf::Sprite& ladder : spritesUD) {
+            if (espriteBounds.intersects(ladder.getGlobalBounds())) {
+                isLadder = true;
+                break;
+            }
+        }
+
+        bool isDown = false;
+        for (sf::Sprite& block : blocks) {
+            if (block.getGlobalBounds().contains(espriteBounds.left + 15.0f, espriteBounds.top + 30.0f + help)) {
+                isDown = true;
+                break;
+            }
+        }
+
+        if ((esprite.isCaught && esprite.isFlyingTexture 
+            || esprite.checkEnemyLeft() == true && esprite.checkEnemyRight() == true && isDown == true && isLadder == false) 
+            && under.getGlobalBounds().intersects(espriteBounds)) return false;
     }
 
     return true;
@@ -2417,6 +2490,11 @@ void Game::setEnemyMove(Enemy& enemy) {
     bool isEnableEnemyLeftOnLadder = getIsEnableEnemyLeftOnLadder(enemy);
     bool isEnableEnemyRightOnLadder = getIsEnableEnemyRightOnLadder(enemy);
 
+    if (isEnableEnemyLeft == false && isEnableEnemyRight == false && isEnableEnemyUp == false && isEnableEnemyDown == false)
+        enemy.isEnableMove = false;
+    else
+        enemy.isEnableMove = true;
+
     sf::FloatRect enemyBounds = enemy.sprite1.getGlobalBounds();
     sf::FloatRect spriteBounds = sprite1.getGlobalBounds(); 
 
@@ -2481,7 +2559,7 @@ void Game::setEnemyMove(Enemy& enemy) {
     if ((enemy.direction == 1 && isEnableEnemyRightOnLadder == true && isEnableEnemyRight ||
         enemy.direction == -1 && isEnableEnemyLeftOnLadder == true && isEnableEnemyLeft) 
         && enemy.ladderDirection != 0 && enemy.isDirectionChanged == false && isEnableEnemyUp == true && isEnableEnemyDown == true
-        && enemy.yInterval > help) {
+        && enemy.yInterval > help && enemyBounds.left != spriteBounds.left) {
         enemy.isLadderException = true;
         return;
     }

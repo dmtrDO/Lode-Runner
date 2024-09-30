@@ -39,7 +39,7 @@ bool Enemy::updateCaught(sf::Time deltaTime, sf::Sprite& goal) {
 	rect.setPosition(spriteLeft, spriteTop + 30.0f);
 	sf::FloatRect intersection;
 
-	if (spriteTop + 30.0f >= hole.getGlobalBounds().top + 30.0f - help &&
+	if (spriteTop + 30.0f >= hole.getGlobalBounds().top + 30.0f - 2 * help &&
 		spriteTop + 30.0f <= hole.getGlobalBounds().top + 30.0f &&
 		spriteBounds.getPosition() != hole.getGlobalBounds().getPosition() && isCaught == false && isFromFly) {
 		isWorkout = false;
@@ -752,6 +752,7 @@ bool Enemy::updateFly() {
 }
 
 void Enemy::initVariables() {
+	isEnableMove = true;
 	yInterval = 0;
 	posY = 0;
 	frameY = 0;

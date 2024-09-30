@@ -31,6 +31,8 @@ public:
 	float posY;
 	int frameY;
 
+	bool isEnableMove;
+
 	bool movingLeft;
 	bool movingRight;
 	bool movingDown;
@@ -66,6 +68,9 @@ public:
 	static std::vector <sf::Sprite> blocks;
 	static std::vector <sf::Sprite> holes;
 
+	bool checkEnemyLeft() const;
+	bool checkEnemyRight() const;
+
 private:
 
 	int windowWidth;
@@ -78,8 +83,6 @@ private:
 
 	bool checkLeft() const;
 	bool checkRight() const;
-	bool checkEnemyLeft() const;
-	bool checkEnemyRight() const;
 
 	sf::Clock clockAnimationLR;
 	sf::Clock clockAnimationUD;
