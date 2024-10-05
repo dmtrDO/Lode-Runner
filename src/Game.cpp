@@ -210,7 +210,7 @@ void Game::updateFPS() {
             int average = 0;
             for (float value : fpsArr) average += value;
             average /= fpsArr.size();
-            if (average > 100) {
+            /*if (average > 100) {
                 transitionSpeed = 4;
                 opacity = 4;
                 help = 1.0f;
@@ -242,7 +242,8 @@ void Game::updateFPS() {
                 transitionSpeed = 18;
                 opacity = 18;
                 help = 5.0f;
-            } else showError(L"Too few frames per second for playing");
+            } else*/ 
+            if (average <= 30) showError(L"Too few frames per second for playing");
             fpsArr.clear();
         }
         fps = 0;
@@ -1304,11 +1305,11 @@ void Game::setWindow() {
     window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width - 200, sf::VideoMode::getDesktopMode().height - 200));
     window.setPosition(sf::Vector2i(100, 50));
 
-    /*window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width - 400, sf::VideoMode::getDesktopMode().height - 200));
-    window.setPosition(sf::Vector2i(300, 50));*/
+    window.setSize(sf::Vector2u(sf::VideoMode::getDesktopMode().width - 400, sf::VideoMode::getDesktopMode().height - 200));
+    window.setPosition(sf::Vector2i(300, 50));
 
     sf::Mouse::setPosition(sf::Vector2i(sf::VideoMode::getDesktopMode().width / 2, 0));
-    window.setFramerateLimit(400);
+    window.setFramerateLimit(200);
 }
 
 void Game::setIcon() {
